@@ -5,7 +5,8 @@ const fieldMetadataKey = Symbol('fieldMetadataKey');
 type WatchHandlerType<T = any, ThisType extends object = object> = (
   this: ThisType,
   newVal: T,
-  oldVal: T
+  oldVal: T,
+  patchConfig: (fieldPath: string, nodeData: unknown) => void
 ) => void;
 
 interface IFieldMetadata {
