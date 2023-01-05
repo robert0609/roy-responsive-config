@@ -1,5 +1,6 @@
-export function main() {
-  return 'hello world';
-}
+import 'reflect-metadata';
 
-console.log(main());
+export * from './decorator';
+export * from './form';
+export * from './type';
+export * from './wrapper';
