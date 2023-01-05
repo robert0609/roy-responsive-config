@@ -22,8 +22,16 @@ export class RoyData {
 
   e: number[] = [3, 6];
 
-  @fieldWatch<number, RoyData>('c', function (newVal, oldVal) {
-    console.log('triggered watch: ', this, newVal, oldVal);
+  @fieldWatch<
+    [boolean, string, number, string | undefined, number, number],
+    RoyData
+  >(['a', 'b', 'c', 'd', 'e', 'g'], function (newVal, oldVal) {
+    console.log(
+      'triggered watch: ',
+      this,
+      JSON.stringify(newVal),
+      JSON.stringify(oldVal)
+    );
   })
   f: RoyItem = new RoyItem(8, 'hongyu');
 

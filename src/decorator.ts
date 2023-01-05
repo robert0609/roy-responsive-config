@@ -12,7 +12,7 @@ interface IFieldMetadata {
   groupConfig?: Omit<IFormItemGroup, 'key'>;
   editConfig?: Omit<IFormItem<FormItemType>, 'key'>;
   watch?: {
-    fieldName: string;
+    fieldNames: string[];
     handler: WatchHandlerType;
   };
 }
@@ -32,12 +32,12 @@ export function fieldEdit<F extends FormItemType = FormItemType>(
 }
 
 export function fieldWatch<T, ThisType extends object>(
-  fieldName: string,
+  fieldNames: string[],
   handler: WatchHandlerType<T, ThisType>
 ) {
   return Reflect.metadata(fieldMetadataKey, {
     watch: {
-      fieldName,
+      fieldNames,
       handler
     }
   } as IFieldMetadata);

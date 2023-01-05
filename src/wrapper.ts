@@ -31,19 +31,25 @@ export class Responsive<T extends object = object> {
       const p = this.key!;
       const fieldMetadata = getFieldMetadata(this.parent.node, p);
       if (fieldMetadata !== undefined && fieldMetadata.watch !== undefined) {
-        const fieldPath = [
-          ...this.path.slice(0, this.path.length - 1),
-          ...fieldMetadata!.watch!.fieldName.split('.')
-        ];
+        const watchSources = fieldMetadata!.watch!.fieldNames.map(
+          (fieldName) => () => {
+            const path = [
+              ...this.path.slice(0, this.path.length - 1),
+              ...fieldName.split(/[\.\[\]'"]/gi).filter((s) => !!s)
+            ];
+            return traverseData.get(path);
+          }
+        );
         const unwatch = watch(
-          () => traverseData.get(fieldPath),
+          watchSources,
           (newVal, oldVal) => {
             fieldMetadata.watch!.handler.call(
               this.parent!.node,
               newVal,
               oldVal
             );
-          }
+          },
+          { deep: true }
         );
         that._unwatches.push(unwatch);
       }
