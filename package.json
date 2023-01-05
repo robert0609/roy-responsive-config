@@ -1,5 +1,5 @@
 {
-  "name": "responsive-config",
+  "name": "roy-responsive-config",
   "version": "0.1.0",
   "description": "responsive data wrapper that could automatically generate config interface",
   "author": "yx",
@@ -26,11 +26,16 @@
     "release": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
   },
   "dependencies": {
+    "reflect-metadata": "^0.1.13",
+    "roy-type-assert": "^0.1.8",
+    "traverse": "^0.6.6",
+    "vue": "^2.6.14"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
     "@types/node": "^15.6.1",
+    "@types/traverse": "^0.6.32",
     "@typescript-eslint/eslint-plugin": "^5.16.0",
     "@typescript-eslint/parser": "^5.16.0",
     "@vitejs/plugin-vue": "^1.2.2",

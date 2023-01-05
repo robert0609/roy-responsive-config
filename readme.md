@@ -1,4 +1,4 @@
-# responsive-config
+# roy-responsive-config
 
 > responsive data wrapper that could automatically generate config interface
 
