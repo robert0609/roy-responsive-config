@@ -23,7 +23,7 @@ export class RoyData {
   e: number[] = [3, 6];
 
   @fieldWatch<
-    [boolean, string, number, string | undefined, number, number],
+    [boolean, string, number, string | undefined, number[], RoyItem[]],
     RoyData
   >(['a', 'b', 'c', 'd', 'e', 'g'], function (newVal, oldVal) {
     console.log(
@@ -32,6 +32,10 @@ export class RoyData {
       JSON.stringify(newVal),
       JSON.stringify(oldVal)
     );
+    if (newVal[2] === 11) {
+      // this.d = 'ppp';// 注意不要死循环
+      this.e = [1, 2, 3];
+    }
   })
   f: RoyItem = new RoyItem(8, 'hongyu');
 

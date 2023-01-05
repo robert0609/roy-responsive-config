@@ -2,8 +2,7 @@ import {
   FormItemType,
   IFormItem,
   FormItemProperties,
-  IFormItemGroup,
-  IFormItemProperties
+  IFormItemGroup
 } from './type';
 import { fieldEdit, fieldGroup } from './decorator';
 import { isArray } from 'roy-type-assert';
