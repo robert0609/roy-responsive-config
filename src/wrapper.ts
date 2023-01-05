@@ -31,13 +31,12 @@ export class Responsive<T extends object = object> {
       const p = this.key!;
       const fieldMetadata = getFieldMetadata(this.parent.node, p);
       if (fieldMetadata !== undefined && fieldMetadata.watch !== undefined) {
-        // const watchTarget = traverseData.get([...this.path.slice(0, this.path.length - 1), ...fieldMetadata.watch.fieldName.split('.')])
+        const fieldPath = [
+          ...this.path.slice(0, this.path.length - 1),
+          ...fieldMetadata!.watch!.fieldName.split('.')
+        ];
         const unwatch = watch(
-          () =>
-            traverseData.get([
-              ...this.path.slice(0, this.path.length - 1),
-              ...fieldMetadata!.watch!.fieldName.split('.')
-            ]),
+          () => traverseData.get(fieldPath),
           (newVal, oldVal) => {
             fieldMetadata.watch!.handler.call(
               this.parent!.node,

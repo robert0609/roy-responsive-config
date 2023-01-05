@@ -35,26 +35,12 @@ export function fieldWatch<T, ThisType extends object>(
   fieldName: string,
   handler: WatchHandlerType<T, ThisType>
 ) {
-  return function (target: ThisType, p: string) {
-    Reflect.defineMetadata(
-      fieldMetadataKey,
-      {
-        watch: {
-          fieldName,
-          handler
-        }
-      } as IFieldMetadata,
-      target,
-      p
-    );
-  };
-
-  // return Reflect.metadata(fieldMetadataKey, {
-  //   watch: {
-  //     fieldName,
-  //     handler
-  //   }
-  // } as IFieldMetadata);
+  return Reflect.metadata(fieldMetadataKey, {
+    watch: {
+      fieldName,
+      handler
+    }
+  } as IFieldMetadata);
 }
 
 export function getFieldMetadata(

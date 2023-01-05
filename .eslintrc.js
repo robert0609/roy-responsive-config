@@ -25,6 +25,7 @@ module.exports = {
     "@typescript-eslint/no-parameter-properties": "warn",
     "@typescript-eslint/no-inferrable-types": "warn",
     "@typescript-eslint/no-empty-function": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "jsx-a11y/click-events-have-key-events": "warn",
     "jsx-a11y/no-static-element-interactions": "warn",
