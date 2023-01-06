@@ -24,7 +24,7 @@ export class Responsive<T extends object = object> {
   }>({ [rootKey]: {} });
 
   get value() {
-    return this._reactiveData[rootKey];
+    return this._reactiveData[rootKey] as T;
   }
 
   private _config: IFormItemGroup = reactive<IFormItemGroup>({
