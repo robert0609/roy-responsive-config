@@ -339,7 +339,7 @@ export class FormItemGroup implements IFormItemGroup {
 
   readonly name: string;
 
-  children?: (IFormItemGroup | IFormItem<FormItemType>)[];
+  children?: IFormItemGroup[];
 
   constructor(key: string, name: string) {
     if (key === undefined || name === undefined) {

@@ -9,14 +9,19 @@ import {
 import traverse from 'traverse';
 import { getFieldMetadata } from './decorator';
 import { IFormItemGroup, FormItemType, IFormItem } from './type';
-import { getType, isArray, VariableType } from 'roy-type-assert';
+import {
+  getType,
+  isArray,
+  isPrimitiveType,
+  VariableType
+} from 'roy-type-assert';
 
 const rootKey = '$root';
 
 export class Responsive<T extends object = object> {
   private _reactiveData = reactive<{
-    [rootKey]?: unknown;
-  }>({ [rootKey]: undefined });
+    [rootKey]: object;
+  }>({ [rootKey]: {} });
 
   get value() {
     return this._reactiveData[rootKey];
@@ -29,10 +34,13 @@ export class Responsive<T extends object = object> {
   });
 
   get config() {
-    if (this._config.children === undefined || this._config.children.length === 0) {
+    if (
+      this._config.children === undefined ||
+      this._config.children.length === 0
+    ) {
       return;
     } else {
-      return this._config.children[0] as IFormItemGroup;
+      return this._config.children[0];
     }
   }
 
@@ -120,20 +128,44 @@ export class Responsive<T extends object = object> {
       ...fieldPath.split(/[\.\[\]'"]/gi).filter((s) => !!s)
     ];
     const oldConfigNode = this.getConfigNodeByPath(this._config, path);
-    const newConfigNode = this.generateConfig(
-      path[path.length - 1],
-      '',
-      nodeData
-    );
-    oldConfigNode.children = newConfigNode.children;
+    if (isPrimitiveType(nodeData)) {
+      // 如果原来节点的配置是group的时候，要改成表单项的配置
+      //@ts-ignore
+      if (oldConfigNode.type === undefined) {
+        const n = oldConfigNode as IFormItem<'text'>;
+        n.type = 'text';
+        n.required = false;
+        n.readonly = false;
+        n.properties = {
+          defaultValue: '',
+          placeholder: `请输入${n.name}`
+        };
+      }
+    } else {
+      const newConfigNode = this.generateConfig(
+        oldConfigNode.key,
+        oldConfigNode.name,
+        nodeData as object
+      );
+      oldConfigNode.children = newConfigNode.children;
+      // 存在子节点的情况下，要把原来的节点配置改成group
+      //@ts-ignore
+      delete oldConfigNode['type'];
+      //@ts-ignore
+      delete oldConfigNode['required'];
+      //@ts-ignore
+      delete oldConfigNode['readonly'];
+      //@ts-ignore
+      delete oldConfigNode['properties'];
+    }
   }
 
   private getConfigNodeByPath(configNode: IFormItemGroup, path: string[]) {
     let node = configNode;
     path.forEach((p) => {
-      let nextNode: IFormItemGroup | undefined = undefined;
+      let nextNode: IFormItemGroup | undefined;
       if (node.children !== undefined && node.children.length > 0) {
-        nextNode = node.children.find((c) => c.key === p) as IFormItemGroup;
+        nextNode = node.children.find((c) => c.key === p);
       }
       if (!nextNode) {
         throw new Error(`解析模板配置失败：未找到[${p}]字段`);
@@ -146,7 +178,7 @@ export class Responsive<T extends object = object> {
   private generateConfig(
     key: string,
     name: string,
-    nodeData: unknown
+    nodeData: object
   ): IFormItemGroup {
     const root: IFormItemGroup = {
       key,
@@ -178,7 +210,7 @@ export class Responsive<T extends object = object> {
             key: p,
             name: p.toString(),
             children: []
-          } as IFormItemGroup);
+          });
         } else {
           configNode.children.push({
             key: p,
@@ -197,12 +229,12 @@ export class Responsive<T extends object = object> {
           key: p,
           name: fieldMetadata.groupConfig.name,
           children: []
-        } as IFormItemGroup);
+        });
       } else if (fieldMetadata.editConfig !== undefined) {
         configNode.children.push({
           key: p,
           ...fieldMetadata.editConfig
-        } as IFormItem<FormItemType>);
+        });
       }
     });
     return root;

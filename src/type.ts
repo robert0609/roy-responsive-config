@@ -33,7 +33,7 @@ export interface IFormItemProperties {
   };
 }
 
-export interface IFormItem<T extends FormItemType> {
+export interface IFormItem<T extends FormItemType> extends IFormItemGroup {
   key: string; // 内部表单项对应的数据字段名
   name: string; // 页面上展示的表单名称
   type: T; // 表单项类型，不同类型对应不同的交互方式
@@ -45,5 +45,5 @@ export interface IFormItem<T extends FormItemType> {
 export interface IFormItemGroup {
   key: string;
   name: string;
-  children?: (IFormItemGroup | IFormItem<FormItemType>)[];
+  children?: IFormItemGroup[];
 }
