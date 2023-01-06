@@ -46,4 +46,5 @@ export interface IFormItemGroup {
   key: string;
   name: string;
   children?: IFormItemGroup[];
+  newFormItem?: () => void;
 }

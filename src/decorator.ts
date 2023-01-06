@@ -8,8 +8,12 @@ type WatchHandlerType<T = any> = (
   update: (nodeData: unknown) => void
 ) => void;
 
+type FieldGroupParameterType = Omit<IFormItemGroup, 'key' | 'newFormItem'> & {
+  createNewFormItem?: () => any;
+};
+
 interface IFieldMetadata {
-  groupConfig?: Omit<IFormItemGroup, 'key'>;
+  groupConfig?: FieldGroupParameterType;
   editConfig?: Omit<IFormItem<FormItemType>, 'key'>;
   watch?: {
     fieldNames: string[];
@@ -22,7 +26,7 @@ interface IFieldMetadata {
  * Property Decorator
  * @param config form item group's meta config
  */
-export function fieldGroup(config: Omit<IFormItemGroup, 'key'>) {
+export function fieldGroup(config: FieldGroupParameterType) {
   return function (target: any, p: string) {
     const originalMetadata = getFieldMetadata(target, p) || {};
     Reflect.defineMetadata(

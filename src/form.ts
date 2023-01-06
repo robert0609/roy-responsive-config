@@ -104,7 +104,10 @@ export class SelectProperties implements FormItemProperties<'select'> {
   readonly placeholder: string;
 
   @fieldGroup({
-    name: '下拉框选项'
+    name: '下拉框选项',
+    createNewFormItem() {
+      return new FormOption('', '');
+    }
   })
   @syncConfig
   readonly options: FormOption[];
@@ -139,7 +142,10 @@ export class RadioProperties implements FormItemProperties<'radio'> {
   readonly defaultValue: string;
 
   @fieldGroup({
-    name: '单选框选项'
+    name: '单选框选项',
+    createNewFormItem() {
+      return new FormOption('', '');
+    }
   })
   @syncConfig
   readonly options: FormOption[];
@@ -169,7 +175,10 @@ export class CheckboxProperties implements FormItemProperties<'checkbox'> {
   readonly defaultValue: string[];
 
   @fieldGroup({
-    name: '复选框属性'
+    name: '复选框属性',
+    createNewFormItem() {
+      return new FormOption('', '');
+    }
   })
   @syncConfig
   readonly options: FormOption[];

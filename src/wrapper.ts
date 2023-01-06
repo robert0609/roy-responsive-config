@@ -8,7 +8,7 @@ import {
 } from 'vue';
 import traverse from 'traverse';
 import { getFieldMetadata } from './decorator';
-import { IFormItemGroup, FormItemType, IFormItem } from './type';
+import { IFormItemGroup, IFormItem } from './type';
 import {
   getType,
   isArray,
@@ -100,7 +100,7 @@ export class Responsive<T extends object = object> {
                 : isReactive(newVal)
                 ? toRaw(newVal)
                 : newVal;
-              that.patchConfig.call(that, this.parent!, p, original);
+              that.patchConfig.call(that, this.parent!.path, p, original);
             }
           );
           that._unwatches.push(unwatch);
@@ -110,7 +110,7 @@ export class Responsive<T extends object = object> {
 
     // 生成初始配置数据
     this._config.children = [
-      this.generateConfig(rootKey, 'root', this._reactiveData[rootKey])
+      this.generateConfig(rootKey, 'root', originalData, [rootKey])
     ];
   }
 
@@ -119,12 +119,12 @@ export class Responsive<T extends object = object> {
   }
 
   private patchConfig(
-    parent: traverse.TraverseContext,
+    parentPath: string[],
     fieldPath: string,
     nodeData: unknown
   ) {
     const path = [
-      ...parent.path,
+      ...parentPath,
       ...fieldPath.split(/[\.\[\]'"]/gi).filter((s) => !!s)
     ];
     const oldConfigNode = this.getConfigNodeByPath(this._config, path);
@@ -132,6 +132,8 @@ export class Responsive<T extends object = object> {
       // 如果原来节点的配置是group的时候，要改成表单项的配置
       //@ts-ignore
       if (oldConfigNode.type === undefined) {
+        delete oldConfigNode.children;
+        delete oldConfigNode.newFormItem;
         const n = oldConfigNode as IFormItem<'text'>;
         n.type = 'text';
         n.required = false;
@@ -145,7 +147,8 @@ export class Responsive<T extends object = object> {
       const newConfigNode = this.generateConfig(
         oldConfigNode.key,
         oldConfigNode.name,
-        nodeData as object
+        nodeData as object,
+        path
       );
       oldConfigNode.children = newConfigNode.children;
       // 存在子节点的情况下，要把原来的节点配置改成group
@@ -178,7 +181,8 @@ export class Responsive<T extends object = object> {
   private generateConfig(
     key: string,
     name: string,
-    nodeData: object
+    nodeData: object,
+    parentPath: string[] = []
   ): IFormItemGroup {
     const root: IFormItemGroup = {
       key,
@@ -225,9 +229,41 @@ export class Responsive<T extends object = object> {
           } as IFormItem<'text'>);
         }
       } else if (fieldMetadata.groupConfig !== undefined) {
+        let newFormItem: (() => void) | undefined;
+        if (!!fieldMetadata.groupConfig.createNewFormItem) {
+          // 如果是表单项组的情况下，如果配置了新建表单项的回调函数，则这里初始化新建函数给UI调用
+          newFormItem = () => {
+            const currentVal = this.parent!.node[p];
+            if (isArray(currentVal)) {
+              const arr = toRaw(currentVal);
+              arr.push(fieldMetadata.groupConfig!.createNewFormItem!());
+              this.parent!.node[p] = arr;
+              that.patchConfig(
+                [...parentPath, ...this.parent!.path],
+                p,
+                this.parent!.node[p]
+              );
+            } else if (getType(currentVal) === VariableType.bObject) {
+              const [k, v] = fieldMetadata.groupConfig!.createNewFormItem!();
+              this.parent!.node[p] = Object.assign({}, toRaw(currentVal), {
+                [k]: v
+              });
+              that.patchConfig(
+                [...parentPath, ...this.parent!.path],
+                p,
+                this.parent!.node[p]
+              );
+            } else {
+              throw new Error(
+                `Create new form item failed! fieldGroup decorator can't attached onto Non-Object or Non-Array field.`
+              );
+            }
+          };
+        }
         configNode.children.push({
           key: p,
           name: fieldMetadata.groupConfig.name,
+          newFormItem,
           children: []
         });
       } else if (fieldMetadata.editConfig !== undefined) {

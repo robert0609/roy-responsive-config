@@ -66,6 +66,12 @@ export class RoyData {
     ]);
   })
   @syncConfig
+  @fieldGroup({
+    name: '属性F',
+    createNewFormItem() {
+      return new RoyItem(-1, '');
+    }
+  })
   f: RoyItem[] = [new RoyItem(8, 'hongyu'), new RoyItem(18, '56hongyu')];
 
   g: RoyItem[] = [{ value: 9, name: 'ert' }];
