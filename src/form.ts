@@ -287,22 +287,13 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
   constructor(
     key: string,
     name: string,
-    type: F,
-    required: boolean,
-    readonly: boolean,
-    properties: FormItemProperties<F>
+    type: F = 'text' as F,
+    required = false,
+    readonly = false,
+    properties: FormItemProperties<F> = new TextProperties() as FormItemProperties<F>
   ) {
-    if (
-      key === undefined ||
-      name === undefined ||
-      type === undefined ||
-      required === undefined ||
-      readonly === undefined ||
-      properties === undefined
-    ) {
-      throw new Error(
-        `创建FormItem失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
+    if (key === undefined || name === undefined) {
+      throw new Error(`创建FormItem失败：缺少必需参数key和name`);
     }
     this.key = key;
     this.name = name;
@@ -322,9 +313,7 @@ export class FormItemGroup implements IFormItemGroup {
 
   constructor(key: string, name: string) {
     if (key === undefined || name === undefined) {
-      throw new Error(
-        `创建FormItemGroup失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
+      throw new Error(`创建FormItemGroup失败：缺少必需参数key和name`);
     }
     this.key = key;
     this.name = name;
