@@ -19,14 +19,22 @@ export class Responsive<T extends object = object> {
   }>({ [rootKey]: undefined });
 
   get value() {
-    return this._reactiveData;
+    return this._reactiveData[rootKey];
   }
 
-  config: IFormItemGroup = reactive<IFormItemGroup>({
+  private _config: IFormItemGroup = reactive<IFormItemGroup>({
     key: '',
     name: '',
     children: []
   });
+
+  get config() {
+    if (this._config.children === undefined || this._config.children.length === 0) {
+      return;
+    } else {
+      return this._config.children[0] as IFormItemGroup;
+    }
+  }
 
   private _unwatches: WatchStopHandle[] = [];
 
@@ -93,7 +101,7 @@ export class Responsive<T extends object = object> {
     });
 
     // 生成初始配置数据
-    this.config.children = [
+    this._config.children = [
       this.generateConfig(rootKey, 'root', this._reactiveData[rootKey])
     ];
   }
@@ -111,7 +119,7 @@ export class Responsive<T extends object = object> {
       ...parent.path,
       ...fieldPath.split(/[\.\[\]'"]/gi).filter((s) => !!s)
     ];
-    const oldConfigNode = this.getConfigNodeByPath(this.config, path);
+    const oldConfigNode = this.getConfigNodeByPath(this._config, path);
     const newConfigNode = this.generateConfig(
       path[path.length - 1],
       '',
