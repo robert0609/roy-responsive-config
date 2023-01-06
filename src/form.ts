@@ -31,12 +31,7 @@ export class FormOption {
   })
   readonly name: string;
 
-  constructor(value: string, name: string) {
-    if (value === undefined || name === undefined) {
-      throw new Error(
-        `创建FormOption失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
-    }
+  constructor(value = '', name = '') {
     this.value = value;
     this.name = name;
   }
@@ -67,12 +62,7 @@ export class TextProperties implements FormItemProperties<'text'> {
   })
   readonly placeholder: string;
 
-  constructor(defaultValue: string, placeholder: string) {
-    if (defaultValue === undefined || placeholder === undefined) {
-      throw new Error(
-        `创建TextProperties失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
-    }
+  constructor(defaultValue = '', placeholder = '请输入占位文字') {
     this.defaultValue = defaultValue;
     this.placeholder = placeholder;
   }
@@ -113,15 +103,10 @@ export class SelectProperties implements FormItemProperties<'select'> {
   readonly options: FormOption[];
 
   constructor(
-    defaultValue: string,
-    placeholder: string,
-    options: FormOption[]
+    defaultValue = '',
+    placeholder = '请输入占位文字',
+    options: FormOption[] = []
   ) {
-    if (defaultValue === undefined || placeholder === undefined || !options) {
-      throw new Error(
-        `创建SelectProperties失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
-    }
     this.defaultValue = defaultValue;
     this.placeholder = placeholder;
     this.options = options;
@@ -144,18 +129,13 @@ export class RadioProperties implements FormItemProperties<'radio'> {
   @fieldGroup({
     name: '单选框选项',
     createNewFormItem() {
-      return new FormOption('', '');
+      return new FormOption();
     }
   })
   @syncConfig
   readonly options: FormOption[];
 
-  constructor(defaultValue: string, options: FormOption[]) {
-    if (defaultValue === undefined || !options) {
-      throw new Error(
-        `创建RadioProperties失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
-    }
+  constructor(defaultValue = '', options: FormOption[] = []) {
     this.defaultValue = defaultValue;
     this.options = options;
   }
@@ -177,18 +157,13 @@ export class CheckboxProperties implements FormItemProperties<'checkbox'> {
   @fieldGroup({
     name: '复选框属性',
     createNewFormItem() {
-      return new FormOption('', '');
+      return new FormOption();
     }
   })
   @syncConfig
   readonly options: FormOption[];
 
-  constructor(defaultValue: string[], options: FormOption[]) {
-    if (!defaultValue || !options) {
-      throw new Error(
-        `创建CheckboxProperties失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
-    }
+  constructor(defaultValue: string[] = [], options: FormOption[] = []) {
     this.defaultValue = defaultValue;
     this.options = options;
   }
@@ -206,12 +181,7 @@ export class SwitchProperties implements FormItemProperties<'switch'> {
   })
   readonly defaultValue: boolean;
 
-  constructor(defaultValue: boolean) {
-    if (defaultValue === undefined) {
-      throw new Error(
-        `创建SwitchProperties失败：缺少必需参数[${[...arguments].join(',')}]`
-      );
-    }
+  constructor(defaultValue = false) {
     this.defaultValue = defaultValue;
   }
 }
@@ -289,23 +259,23 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
     let properties: FormItemProperties<FormItemType>;
     switch (newVal) {
       case 'select': {
-        properties = new SelectProperties('', '请输入占位文字', []);
+        properties = new SelectProperties();
         break;
       }
       case 'radio': {
-        properties = new RadioProperties('', []);
+        properties = new RadioProperties();
         break;
       }
       case 'checkbox': {
-        properties = new CheckboxProperties([], []);
+        properties = new CheckboxProperties();
         break;
       }
       case 'switch': {
-        properties = new SwitchProperties(false);
+        properties = new SwitchProperties();
         break;
       }
       default: {
-        properties = new TextProperties('', '请输入占位文字');
+        properties = new TextProperties();
         break;
       }
     }
