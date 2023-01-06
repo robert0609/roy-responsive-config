@@ -4,8 +4,7 @@ import {
   FormItemProperties,
   IFormItemGroup
 } from './type';
-import { fieldEdit, fieldGroup } from './decorator';
-import { isArray } from 'roy-type-assert';
+import { fieldEdit, fieldGroup, fieldWatch, syncConfig } from './decorator';
 
 export class FormOption {
   @fieldEdit<'text'>({
@@ -107,6 +106,7 @@ export class SelectProperties implements FormItemProperties<'select'> {
   @fieldGroup({
     name: '下拉框选项'
   })
+  @syncConfig
   readonly options: FormOption[];
 
   constructor(
@@ -141,6 +141,7 @@ export class RadioProperties implements FormItemProperties<'radio'> {
   @fieldGroup({
     name: '单选框选项'
   })
+  @syncConfig
   readonly options: FormOption[];
 
   constructor(defaultValue: string, options: FormOption[]) {
@@ -170,6 +171,7 @@ export class CheckboxProperties implements FormItemProperties<'checkbox'> {
   @fieldGroup({
     name: '复选框属性'
   })
+  @syncConfig
   readonly options: FormOption[];
 
   constructor(defaultValue: string[], options: FormOption[]) {
@@ -274,6 +276,33 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
   @fieldGroup({
     name: '其它属性'
   })
+  @fieldWatch<[F]>(['type'], ([newVal], [oldVal], update) => {
+    let properties: FormItemProperties<FormItemType>;
+    switch (newVal) {
+      case 'select': {
+        properties = new SelectProperties('', '请输入占位文字', []);
+        break;
+      }
+      case 'radio': {
+        properties = new RadioProperties('', []);
+        break;
+      }
+      case 'checkbox': {
+        properties = new CheckboxProperties([], []);
+        break;
+      }
+      case 'switch': {
+        properties = new SwitchProperties(false);
+        break;
+      }
+      default: {
+        properties = new TextProperties('', '请输入占位文字');
+        break;
+      }
+    }
+    update(properties);
+  })
+  @syncConfig
   readonly properties: FormItemProperties<F>;
 
   constructor(
