@@ -24,10 +24,15 @@ interface IFieldMetadata {
 export function fieldGroup(config: Omit<IFormItemGroup, 'key'>) {
   return function (target: any, p: string) {
     const originalMetadata = getFieldMetadata(target, p) || {};
-    Reflect.defineMetadata(fieldMetadataKey, Object.assign(originalMetadata, {
-      groupConfig: config
-    }), target, p);
-  }
+    Reflect.defineMetadata(
+      fieldMetadataKey,
+      Object.assign(originalMetadata, {
+        groupConfig: config
+      }),
+      target,
+      p
+    );
+  };
 }
 
 /**
@@ -39,10 +44,15 @@ export function fieldEdit<F extends FormItemType = FormItemType>(
 ) {
   return function (target: any, p: string) {
     const originalMetadata = getFieldMetadata(target, p) || {};
-    Reflect.defineMetadata(fieldMetadataKey, Object.assign(originalMetadata, {
-      editConfig: formItemConfig
-    }), target, p);
-  }
+    Reflect.defineMetadata(
+      fieldMetadataKey,
+      Object.assign(originalMetadata, {
+        editConfig: formItemConfig
+      }),
+      target,
+      p
+    );
+  };
 }
 
 /**
@@ -56,13 +66,18 @@ export function fieldWatch<T>(
 ) {
   return function (target: any, p: string) {
     const originalMetadata = getFieldMetadata(target, p) || {};
-    Reflect.defineMetadata(fieldMetadataKey, Object.assign(originalMetadata, {
-      watch: {
-        fieldNames,
-        handler
-      }
-    }), target, p);
-  }
+    Reflect.defineMetadata(
+      fieldMetadataKey,
+      Object.assign(originalMetadata, {
+        watch: {
+          fieldNames,
+          handler
+        }
+      }),
+      target,
+      p
+    );
+  };
 }
 
 export function getFieldMetadata(
