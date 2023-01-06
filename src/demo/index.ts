@@ -29,6 +29,13 @@ class RoyItem {
       ]
     }
   })
+  @fieldWatch<[number]>(['value'], function (newVal, oldVal, patch) {
+    console.log(
+      'triggered watch: ',
+      JSON.stringify(newVal),
+      JSON.stringify(oldVal)
+    );
+  })
   name: string;
 
   constructor(value: number, name: string) {
@@ -48,24 +55,12 @@ export class RoyData {
 
   e: number[] = [3, 6];
 
-  @fieldWatch<
-    [boolean, string, number, string | undefined, number[], RoyItem[]],
-    RoyData
-  >(['a', 'b', 'c', 'd', 'e', 'g'], function (newVal, oldVal, patchConfig) {
-    console.log(
-      'triggered watch: ',
-      this,
-      JSON.stringify(newVal),
-      JSON.stringify(oldVal)
-    );
-    if (newVal[2] === 11) {
-      // this.d = 'ppp';// 注意不要死循环
-      //@ts-ignore
-      this.f = [new RoyItem(8, 'hongyu'), new RoyItem(18, '56hongyu')];
-      patchConfig('f', this.f);
-    }
+  @fieldWatch<[number]>(['f[0].value'], function (newVal, oldVal, patch) {
+    // this.d = 'ppp';// 注意不要死循环
+    //@ts-ignore
+    patch([new RoyItem(800, 'hongyu'), new RoyItem(1800, '56hongyu')]);
   })
-  f: RoyItem = new RoyItem(8, 'hongyu');
+  f: RoyItem[] = [new RoyItem(8, 'hongyu'), new RoyItem(18, '56hongyu')];
 
   g: RoyItem[] = [{ value: 9, name: 'ert' }];
 

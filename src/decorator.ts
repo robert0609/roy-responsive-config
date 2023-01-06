@@ -2,11 +2,10 @@ import { FormItemType, IFormItem, IFormItemGroup } from './type';
 
 const fieldMetadataKey = Symbol('fieldMetadataKey');
 
-type WatchHandlerType<T = any, ThisType extends object = object> = (
-  this: ThisType,
+type WatchHandlerType<T = any> = (
   newVal: T,
   oldVal: T,
-  patchConfig: (fieldPath: string, nodeData: unknown) => void
+  patch: (nodeData: unknown) => void
 ) => void;
 
 interface IFieldMetadata {
@@ -18,30 +17,52 @@ interface IFieldMetadata {
   };
 }
 
+/**
+ * Property Decorator
+ * @param config form item group's meta config
+ */
 export function fieldGroup(config: Omit<IFormItemGroup, 'key'>) {
-  return Reflect.metadata(fieldMetadataKey, {
-    groupConfig: config
-  } as IFieldMetadata);
+  return function (target: any, p: string) {
+    const originalMetadata = getFieldMetadata(target, p) || {};
+    Reflect.defineMetadata(fieldMetadataKey, Object.assign(originalMetadata, {
+      groupConfig: config
+    }), target, p);
+  }
 }
 
+/**
+ * Property Decorator
+ * @param formItemConfig form item's meta config that is used to render config UI
+ */
 export function fieldEdit<F extends FormItemType = FormItemType>(
   formItemConfig: Omit<IFormItem<F>, 'key'>
 ) {
-  return Reflect.metadata(fieldMetadataKey, {
-    editConfig: formItemConfig
-  } as IFieldMetadata);
+  return function (target: any, p: string) {
+    const originalMetadata = getFieldMetadata(target, p) || {};
+    Reflect.defineMetadata(fieldMetadataKey, Object.assign(originalMetadata, {
+      editConfig: formItemConfig
+    }), target, p);
+  }
 }
 
-export function fieldWatch<T, ThisType extends object>(
+/**
+ * Property Decorator
+ * @param fieldNames watched fieldNames
+ * @param handler when watched fields were changed, this handler will be run
+ */
+export function fieldWatch<T>(
   fieldNames: string[],
-  handler: WatchHandlerType<T, ThisType>
+  handler: WatchHandlerType<T>
 ) {
-  return Reflect.metadata(fieldMetadataKey, {
-    watch: {
-      fieldNames,
-      handler
-    }
-  } as IFieldMetadata);
+  return function (target: any, p: string) {
+    const originalMetadata = getFieldMetadata(target, p) || {};
+    Reflect.defineMetadata(fieldMetadataKey, Object.assign(originalMetadata, {
+      watch: {
+        fieldNames,
+        handler
+      }
+    }), target, p);
+  }
 }
 
 export function getFieldMetadata(

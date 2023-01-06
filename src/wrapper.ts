@@ -48,12 +48,14 @@ export class Responsive<T extends object = object> {
         const unwatch = watch(
           watchSources,
           (newVal, oldVal) => {
-            fieldMetadata.watch!.handler.call(
-              this.parent!.node,
+            fieldMetadata.watch!.handler(
               newVal,
               oldVal,
-              (fieldPath: string, nodeData: unknown) => {
-                that.patchConfig.call(that, this.parent!, fieldPath, nodeData);
+              (nodeData: unknown) => {
+                // 更细响应式数据
+                this.parent!.node[p] = nodeData;
+                // 更新响应式配置数据
+                that.patchConfig.call(that, this.parent!, p, nodeData);
               }
             );
           },
