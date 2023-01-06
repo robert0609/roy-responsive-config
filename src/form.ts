@@ -62,7 +62,7 @@ export class TextProperties implements FormItemProperties<'text'> {
   })
   readonly placeholder: string;
 
-  constructor(defaultValue = '', placeholder = '请输入占位文字') {
+  constructor(defaultValue = '', placeholder = '') {
     this.defaultValue = defaultValue;
     this.placeholder = placeholder;
   }
@@ -104,7 +104,7 @@ export class SelectProperties implements FormItemProperties<'select'> {
 
   constructor(
     defaultValue = '',
-    placeholder = '请输入占位文字',
+    placeholder = '',
     options: FormOption[] = []
   ) {
     this.defaultValue = defaultValue;
