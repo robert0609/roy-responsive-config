@@ -47,8 +47,7 @@ export class Responsive<T extends object = object> {
   private _unwatches: WatchStopHandle[] = [];
 
   constructor(
-    originalData: T,
-    { deep = false }: { deep: boolean } = { deep: false }
+    originalData: T
   ) {
     this._reactiveData[rootKey] = originalData;
 
@@ -84,8 +83,7 @@ export class Responsive<T extends object = object> {
                 // 更细响应式数据
                 this.parent!.node[p] = original;
               });
-            },
-            { deep }
+            }
           );
           that._unwatches.push(unwatch);
         }
@@ -119,7 +117,7 @@ export class Responsive<T extends object = object> {
   }
 
   private patchConfig(
-    parentPath: string[],
+    parentPath: string[], // IMPORTANCE:这个参数一定要从根开始
     fieldPath: string,
     nodeData: unknown
   ) {
