@@ -1,6 +1,6 @@
 {
   "name": "roy-responsive-config",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "responsive data wrapper that could automatically generate config interface",
   "author": "yx",
   "files": [

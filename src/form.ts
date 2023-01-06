@@ -102,11 +102,7 @@ export class SelectProperties implements FormItemProperties<'select'> {
   @syncConfig
   readonly options: FormOption[];
 
-  constructor(
-    defaultValue = '',
-    placeholder = '',
-    options: FormOption[] = []
-  ) {
+  constructor(defaultValue = '', placeholder = '', options: FormOption[] = []) {
     this.defaultValue = defaultValue;
     this.placeholder = placeholder;
     this.options = options;
