@@ -8,7 +8,10 @@ type WatchHandlerType<T = any> = (
   update: (nodeData: unknown) => void
 ) => void;
 
-type FieldGroupParameterType = Omit<IFormItemGroup, 'key' | 'newFormItem'> & {
+type FieldGroupParameterType = Omit<
+  IFormItemGroup,
+  'key' | 'newFormItem' | 'deleteFormItem'
+> & {
   createNewFormItem?: () => any;
 };
 
