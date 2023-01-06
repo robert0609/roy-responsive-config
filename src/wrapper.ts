@@ -134,6 +134,7 @@ export class Responsive<T extends object = object> {
       if (oldConfigNode.type === undefined) {
         delete oldConfigNode.children;
         delete oldConfigNode.newFormItem;
+        delete oldConfigNode.deleteFormItem;
         const n = oldConfigNode as IFormItem<'text'>;
         n.type = 'text';
         n.required = false;
@@ -230,6 +231,7 @@ export class Responsive<T extends object = object> {
         }
       } else if (fieldMetadata.groupConfig !== undefined) {
         let newFormItem: (() => void) | undefined;
+        let deleteFormItem: ((key: number | string) => void) | undefined;
         if (!!fieldMetadata.groupConfig.createNewFormItem) {
           // 如果是表单项组的情况下，如果配置了新建表单项的回调函数，则这里初始化新建函数给UI调用
           newFormItem = () => {
@@ -238,32 +240,50 @@ export class Responsive<T extends object = object> {
               const arr = toRaw(currentVal);
               arr.push(fieldMetadata.groupConfig!.createNewFormItem!());
               this.parent!.node[p] = arr;
-              that.patchConfig(
-                [...parentPath, ...this.parent!.path],
-                p,
-                this.parent!.node[p]
-              );
             } else if (getType(currentVal) === VariableType.bObject) {
               const [k, v] = fieldMetadata.groupConfig!.createNewFormItem!();
               this.parent!.node[p] = Object.assign({}, toRaw(currentVal), {
                 [k]: v
               });
-              that.patchConfig(
-                [...parentPath, ...this.parent!.path],
-                p,
-                this.parent!.node[p]
-              );
             } else {
               throw new Error(
                 `Create new form item failed! fieldGroup decorator can't attached onto Non-Object or Non-Array field.`
               );
             }
+            that.patchConfig(
+              [...parentPath, ...this.parent!.path],
+              p,
+              this.parent!.node[p]
+            );
+          };
+
+          deleteFormItem = (key: number | string) => {
+            const currentVal = this.parent!.node[p];
+            if (isArray(currentVal)) {
+              const arr = toRaw(currentVal);
+              arr.splice(key as number, 1);
+              this.parent!.node[p] = arr;
+            } else if (getType(currentVal) === VariableType.bObject) {
+              const obj = toRaw(currentVal);
+              delete obj[key];
+              this.parent!.node[p] = Object.assign({}, obj);
+            } else {
+              throw new Error(
+                `Create new form item failed! fieldGroup decorator can't attached onto Non-Object or Non-Array field.`
+              );
+            }
+            that.patchConfig(
+              [...parentPath, ...this.parent!.path],
+              p,
+              this.parent!.node[p]
+            );
           };
         }
         configNode.children.push({
           key: p,
           name: fieldMetadata.groupConfig.name,
           newFormItem,
+          deleteFormItem,
           children: []
         });
       } else if (fieldMetadata.editConfig !== undefined) {
