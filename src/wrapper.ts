@@ -52,7 +52,9 @@ export class Responsive<T extends object = object> {
               this.parent!.node,
               newVal,
               oldVal,
-              that.patchConfig.bind(that)
+              (fieldPath: string, nodeData: unknown) => {
+                that.patchConfig.call(that, this.parent!, fieldPath, nodeData);
+              }
             );
           },
           { deep: true }
@@ -62,19 +64,19 @@ export class Responsive<T extends object = object> {
     });
 
     // 生成初始配置数据
-    this.config.children = this.generateConfig(
+    this.config.children = [this.generateConfig(
       rootKey,
       'root',
       this._reactiveData[rootKey]
-    ).children;
+    )];
   }
 
   dispose() {
     this._unwatches.forEach((unwatch) => unwatch());
   }
 
-  patchConfig(fieldPath: string, nodeData: unknown) {
-    const path = fieldPath.split(/[\.\[\]'"]/gi).filter((s) => !!s);
+  patchConfig(parent: traverse.TraverseContext, fieldPath: string, nodeData: unknown) {
+    const path = [...parent.path, ...fieldPath.split(/[\.\[\]'"]/gi).filter((s) => !!s)];
     const oldConfigNode = this.getConfigNodeByPath(this.config, path);
     const newConfigNode = this.generateConfig(
       path[path.length - 1],
