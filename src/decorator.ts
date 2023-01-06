@@ -5,7 +5,7 @@ const fieldMetadataKey = Symbol('fieldMetadataKey');
 type WatchHandlerType<T = any> = (
   newVal: T,
   oldVal: T,
-  patch: (nodeData: unknown) => void
+  update: (nodeData: unknown) => void
 ) => void;
 
 interface IFieldMetadata {
@@ -15,6 +15,7 @@ interface IFieldMetadata {
     fieldNames: string[];
     handler: WatchHandlerType;
   };
+  autoSyncConfig?: boolean;
 }
 
 /**
@@ -78,6 +79,21 @@ export function fieldWatch<T>(
       p
     );
   };
+}
+
+/**
+ * Property Decorator
+ */
+export function syncConfig(target: any, p: string) {
+  const originalMetadata = getFieldMetadata(target, p) || {};
+  Reflect.defineMetadata(
+    fieldMetadataKey,
+    Object.assign(originalMetadata, {
+      autoSyncConfig: true
+    }),
+    target,
+    p
+  );
 }
 
 export function getFieldMetadata(

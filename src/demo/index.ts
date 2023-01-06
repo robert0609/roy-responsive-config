@@ -1,4 +1,4 @@
-import { fieldWatch, fieldEdit, fieldGroup, Responsive } from '..';
+import { fieldWatch, fieldEdit, fieldGroup, syncConfig, Responsive } from '..';
 
 class RoyItem {
   @fieldEdit<'switch'>({
@@ -29,7 +29,7 @@ class RoyItem {
       ]
     }
   })
-  @fieldWatch<[number]>(['value'], function (newVal, oldVal, patch) {
+  @fieldWatch<[number]>(['value'], function (newVal, oldVal, update) {
     console.log(
       'triggered watch: ',
       JSON.stringify(newVal),
@@ -55,11 +55,17 @@ export class RoyData {
 
   e: number[] = [3, 6];
 
-  @fieldWatch<[number]>(['f[0].value'], function (newVal, oldVal, patch) {
+  @fieldWatch<[number]>(['f[0].value'], function (newVal, oldVal, update) {
     // this.d = 'ppp';// 注意不要死循环
     //@ts-ignore
-    patch([new RoyItem(800, 'hongyu'), new RoyItem(1800, '56hongyu')]);
+    update([
+      new RoyItem(8, 'hongyu'),
+      new RoyItem(18, '56hongyu'),
+      new RoyItem(800, 'hongyu'),
+      new RoyItem(1800, '56hongyu')
+    ]);
   })
+  @syncConfig
   f: RoyItem[] = [new RoyItem(8, 'hongyu'), new RoyItem(18, '56hongyu')];
 
   g: RoyItem[] = [{ value: 9, name: 'ert' }];

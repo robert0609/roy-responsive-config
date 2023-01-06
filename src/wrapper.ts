@@ -1,4 +1,11 @@
-import { reactive, watch, WatchStopHandle } from 'vue';
+import {
+  isReactive,
+  isRef,
+  reactive,
+  toRaw,
+  watch,
+  WatchStopHandle
+} from 'vue';
 import traverse from 'traverse';
 import { getFieldMetadata } from './decorator';
 import { IFormItemGroup, FormItemType, IFormItem } from './type';
@@ -23,7 +30,10 @@ export class Responsive<T extends object = object> {
 
   private _unwatches: WatchStopHandle[] = [];
 
-  constructor(originalData: T) {
+  constructor(
+    originalData: T,
+    { deep = false }: { deep: boolean } = { deep: false }
+  ) {
     this._reactiveData[rootKey] = originalData;
 
     const that = this // eslint-disable-line
@@ -34,34 +44,51 @@ export class Responsive<T extends object = object> {
       }
       const p = this.key!;
       const fieldMetadata = getFieldMetadata(this.parent.node, p);
-      if (fieldMetadata !== undefined && fieldMetadata.watch !== undefined) {
-        // 建立watch监听器
-        const watchSources = fieldMetadata!.watch!.fieldNames.map(
-          (fieldName) => () => {
-            const path = [
-              ...this.path.slice(0, this.path.length - 1),
-              ...fieldName.split(/[\.\[\]'"]/gi).filter((s) => !!s)
-            ];
-            return traverseData.get(path);
-          }
-        );
-        const unwatch = watch(
-          watchSources,
-          (newVal, oldVal) => {
-            fieldMetadata.watch!.handler(
-              newVal,
-              oldVal,
-              (nodeData: unknown) => {
+      if (fieldMetadata !== undefined) {
+        if (fieldMetadata.watch !== undefined) {
+          // 建立watch监听器
+          const watchSources = fieldMetadata!.watch!.fieldNames.map(
+            (fieldName) => () => {
+              const path = [
+                ...this.path.slice(0, this.path.length - 1),
+                ...fieldName.split(/[\.\[\]'"]/gi).filter((s) => !!s)
+              ];
+              return traverseData.get(path);
+            }
+          );
+          const unwatch = watch(
+            watchSources,
+            (newVal, oldVal) => {
+              fieldMetadata.watch!.handler(newVal, oldVal, (nodeData) => {
+                const original = isRef(nodeData)
+                  ? nodeData.value
+                  : isReactive(nodeData)
+                  ? toRaw(nodeData)
+                  : nodeData;
                 // 更细响应式数据
-                this.parent!.node[p] = nodeData;
-                // 更新响应式配置数据
-                that.patchConfig.call(that, this.parent!, p, nodeData);
-              }
-            );
-          },
-          { deep: true }
-        );
-        that._unwatches.push(unwatch);
+                this.parent!.node[p] = original;
+              });
+            },
+            { deep }
+          );
+          that._unwatches.push(unwatch);
+        }
+
+        if (fieldMetadata.autoSyncConfig === true) {
+          const unwatch = watch(
+            () => traverseData.get(this.path),
+            (newVal) => {
+              // 更新响应式配置数据
+              const original = isRef(newVal)
+                ? newVal.value
+                : isReactive(newVal)
+                ? toRaw(newVal)
+                : newVal;
+              that.patchConfig.call(that, this.parent!, p, original);
+            }
+          );
+          that._unwatches.push(unwatch);
+        }
       }
     });
 
@@ -75,7 +102,7 @@ export class Responsive<T extends object = object> {
     this._unwatches.forEach((unwatch) => unwatch());
   }
 
-  patchConfig(
+  private patchConfig(
     parent: traverse.TraverseContext,
     fieldPath: string,
     nodeData: unknown
