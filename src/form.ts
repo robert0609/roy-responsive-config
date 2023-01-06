@@ -41,14 +41,6 @@ export class FormOption {
     this.value = value;
     this.name = name;
   }
-
-  /**
-   * 尝试从json的配置数据结构中，转化为模板配置
-   * @param configData
-   */
-  static tryParseFrom(configData: any) {
-    return new FormOption(configData.value, configData.name);
-  }
 }
 
 export class TextProperties implements FormItemProperties<'text'> {
@@ -84,14 +76,6 @@ export class TextProperties implements FormItemProperties<'text'> {
     }
     this.defaultValue = defaultValue;
     this.placeholder = placeholder;
-  }
-
-  /**
-   * 尝试从json的配置数据结构中，转化为模板配置
-   * @param configData
-   */
-  static tryParseFrom(configData: any) {
-    return new TextProperties(configData.defaultValue, configData.placeholder);
   }
 }
 
@@ -139,24 +123,6 @@ export class SelectProperties implements FormItemProperties<'select'> {
     this.placeholder = placeholder;
     this.options = options;
   }
-
-  /**
-   * 尝试从json的配置数据结构中，转化为模板配置
-   * @param configData
-   */
-  static tryParseFrom(configData: any) {
-    if (!isArray(configData.options)) {
-      throw new Error(`创建SelectProperties失败：参数options不是数组`);
-    }
-    const options = (configData.options as unknown[]).map((o) =>
-      FormOption.tryParseFrom(o)
-    );
-    return new SelectProperties(
-      configData.defaultValue,
-      configData.placeholder,
-      options
-    );
-  }
 }
 
 export class RadioProperties implements FormItemProperties<'radio'> {
@@ -185,20 +151,6 @@ export class RadioProperties implements FormItemProperties<'radio'> {
     }
     this.defaultValue = defaultValue;
     this.options = options;
-  }
-
-  /**
-   * 尝试从json的配置数据结构中，转化为模板配置
-   * @param configData
-   */
-  static tryParseFrom(configData: any) {
-    if (!isArray(configData.options)) {
-      throw new Error(`创建RadioProperties失败：参数options不是数组`);
-    }
-    const options = (configData.options as unknown[]).map((o) =>
-      FormOption.tryParseFrom(o)
-    );
-    return new RadioProperties(configData.defaultValue, options);
   }
 }
 
@@ -229,20 +181,6 @@ export class CheckboxProperties implements FormItemProperties<'checkbox'> {
     this.defaultValue = defaultValue;
     this.options = options;
   }
-
-  /**
-   * 尝试从json的配置数据结构中，转化为模板配置
-   * @param configData
-   */
-  static tryParseFrom(configData: any) {
-    if (!isArray(configData.options)) {
-      throw new Error(`创建CheckboxProperties失败：参数options不是数组`);
-    }
-    const options = (configData.options as unknown[]).map((o) =>
-      FormOption.tryParseFrom(o)
-    );
-    return new CheckboxProperties(configData.defaultValue, options);
-  }
 }
 
 export class SwitchProperties implements FormItemProperties<'switch'> {
@@ -264,14 +202,6 @@ export class SwitchProperties implements FormItemProperties<'switch'> {
       );
     }
     this.defaultValue = defaultValue;
-  }
-
-  /**
-   * 尝试从json的配置数据结构中，转化为模板配置
-   * @param configData
-   */
-  static tryParseFrom(configData: any) {
-    return new SwitchProperties(configData.defaultValue);
   }
 }
 
@@ -372,44 +302,6 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
     this.required = required;
     this.readonly = readonly;
     this.properties = properties;
-  }
-
-  /**
-   * 尝试从json的配置数据结构中，转化为模板配置
-   * @param configData
-   */
-  static tryParseFrom(configData: any) {
-    let properties: FormItemProperties<FormItemType>;
-    switch (configData.type as FormItemType) {
-      case 'select': {
-        properties = SelectProperties.tryParseFrom(configData.properties);
-        break;
-      }
-      case 'radio': {
-        properties = RadioProperties.tryParseFrom(configData.properties);
-        break;
-      }
-      case 'checkbox': {
-        properties = CheckboxProperties.tryParseFrom(configData.properties);
-        break;
-      }
-      case 'switch': {
-        properties = SwitchProperties.tryParseFrom(configData.properties);
-        break;
-      }
-      default: {
-        properties = TextProperties.tryParseFrom(configData.properties);
-        break;
-      }
-    }
-    return new FormItem(
-      configData.key,
-      configData.name,
-      configData.type,
-      configData.required,
-      configData.readonly,
-      properties
-    );
   }
 }
 
