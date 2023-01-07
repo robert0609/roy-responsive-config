@@ -28,8 +28,6 @@ import {
 
 const rootKey = '$root';
 
-let totalWatcherCount = 0;
-
 export class ResponsiveNode {
   private _reactiveConfig: IBaseFormItem;
 
@@ -49,7 +47,7 @@ export class ResponsiveNode {
     });
     // create watcher
     const unwatch = watch(this.reactiveData, (newVal, oldVal) => {
-      console.log(`!!!! watched: [${this.key.toString()}]`, newVal, oldVal)
+      console.log(`!!!! watched: [${this.key.toString()}]`, newVal, oldVal);
 
       this.dispose({ skipDestroyOwnWatcher: true });
       // traverse children
@@ -57,7 +55,11 @@ export class ResponsiveNode {
       if (!isPrimitiveType(obj)) {
         if (isArray(obj)) {
           obj.forEach((v, i) => {
-            const child = new ResponsiveNode(i.toString(), i.toString(), toRef(obj, i));
+            const child = new ResponsiveNode(
+              i.toString(),
+              i.toString(),
+              toRef(obj, i)
+            );
             this.appendChild(child);
           });
         } else {
@@ -70,14 +72,17 @@ export class ResponsiveNode {
     });
 
     this._unwatches.push(unwatch);
-    console.log('current watcher count: ', ++totalWatcherCount);
 
     // traverse children
     const obj = reactiveData.value;
     if (!isPrimitiveType(obj)) {
       if (isArray(obj)) {
         obj.forEach((v, i) => {
-          const child = new ResponsiveNode(i.toString(), i.toString(), toRef(obj, i));
+          const child = new ResponsiveNode(
+            i.toString(),
+            i.toString(),
+            toRef(obj, i)
+          );
           this.appendChild(child);
         });
       } else {
@@ -91,11 +96,10 @@ export class ResponsiveNode {
 
   private dispose({ skipDestroyOwnWatcher = false } = {}) {
     if (!skipDestroyOwnWatcher) {
-      this._unwatches.forEach(fn => fn());
-      totalWatcherCount -= this._unwatches.length;
+      this._unwatches.forEach((fn) => fn());
       this._unwatches = [];
     }
-    this._children.forEach(child => child.dispose());
+    this._children.forEach((child) => child.dispose());
 
     this.clearChildren();
   }
@@ -109,8 +113,6 @@ export class ResponsiveNode {
       // finally confirm new parent
       this._parent = parentNode;
     }
-
-
 
     // // get metadata
     // const fieldMetadata = getFieldMetadata(
@@ -129,11 +131,13 @@ export class ResponsiveNode {
   }
 
   private appendChild(childNode: ResponsiveNode) {
-    if (this._children.findIndex(c => c.key === childNode.key) > -1) {
+    if (this._children.findIndex((c) => c.key === childNode.key) > -1) {
       throw new Error(`append child responsive node failed: already exists`);
     }
     if (!!childNode._parent) {
-      throw new Error(`append child responsive node failed: child already has another parent`);
+      throw new Error(
+        `append child responsive node failed: child already has another parent`
+      );
     }
     this._children.push(childNode);
 
@@ -141,7 +145,9 @@ export class ResponsiveNode {
   }
 
   private removeChild(childNode: ResponsiveNode) {
-    const deleteIndex = this._children.findIndex(c => c.key === childNode.key);
+    const deleteIndex = this._children.findIndex(
+      (c) => c.key === childNode.key
+    );
     if (deleteIndex > -1) {
       this._children.splice(deleteIndex, 1);
 
@@ -150,12 +156,9 @@ export class ResponsiveNode {
   }
 
   private clearChildren() {
-    this._children.forEach(childNode => childNode.setParent());
+    this._children.forEach((childNode) => childNode.setParent());
     this._children = [];
   }
-
-
-
 
   private syncConfig(newVal: any) {
     if (isPrimitiveType(newVal)) {
