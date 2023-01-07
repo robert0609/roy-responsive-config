@@ -22,6 +22,7 @@ specifiers:
   eslint-plugin-vue: ^7.10.0
   husky: ^6.0.0
   lint-staged: ^11.0.0
+  mitt: ^3.0.0
   postcss: ^8.3.0
   prettier: ^2.3.0
   reflect-metadata: ^0.1.13
@@ -42,6 +43,7 @@ specifiers:
   vue-tsc: ^1.0.11
 
 dependencies:
+  mitt: registry.npmmirror.com/mitt/3.0.0
   reflect-metadata: registry.npmmirror.com/reflect-metadata/0.1.13
   roy-type-assert: registry.npmmirror.com/roy-type-assert/0.1.8
   traverse: 0.6.6
@@ -3095,13 +3097,17 @@ packages:
       csstype: registry.npmmirror.com/csstype/2.6.21
     dev: false
 
-  registry.npmmirror.com/@vue/server-renderer/3.2.45:
+  registry.npmmirror.com/@vue/server-renderer/3.2.45_vue@3.2.45:
     resolution: {integrity: sha512-ebiMq7q24WBU1D6uhPK//2OTR1iRIyxjF5iVq/1a5I1SDMDyDu4Ts6fJaMnjrvD3MqnaiFkKQj+LKAgz5WIK3g==, registry: https://packages.aliyun.com/5f02dcd86a575d7f23661142/npm/npm-registry/, tarball: https://registry.npmmirror.com/@vue/server-renderer/-/server-renderer-3.2.45.tgz}
+    id: registry.npmmirror.com/@vue/server-renderer/3.2.45
     name: '@vue/server-renderer'
     version: 3.2.45
+    peerDependencies:
+      vue: 3.2.45
     dependencies:
       '@vue/compiler-ssr': registry.npmmirror.com/@vue/compiler-ssr/3.2.45
       '@vue/shared': registry.npmmirror.com/@vue/shared/3.2.45
+      vue: registry.npmmirror.com/vue/3.2.45
     dev: false
 
   registry.npmmirror.com/@vue/shared/3.2.45:
@@ -3801,8 +3807,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
-      is-text-path: registry.npmmirror.com/is-text-path/1.0.1
       JSONStream: registry.npmmirror.com/JSONStream/1.3.5
+      is-text-path: registry.npmmirror.com/is-text-path/1.0.1
       lodash: 4.17.21
       meow: registry.npmmirror.com/meow/8.1.2
       split2: registry.npmmirror.com/split2/3.2.2
@@ -5582,6 +5588,12 @@ packages:
     version: 1.2.7
     dev: true
 
+  registry.npmmirror.com/mitt/3.0.0:
+    resolution: {integrity: sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ==, registry: https://packages.aliyun.com/5f02dcd86a575d7f23661142/npm/npm-registry/, tarball: https://registry.npmmirror.com/mitt/-/mitt-3.0.0.tgz}
+    name: mitt
+    version: 3.0.0
+    dev: false
+
   registry.npmmirror.com/mkdirp/0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==, registry: https://packages.aliyun.com/5f02dcd86a575d7f23661142/npm/npm-registry/, tarball: https://registry.npmmirror.com/mkdirp/-/mkdirp-0.5.6.tgz}
     name: mkdirp
@@ -6784,6 +6796,7 @@ packages:
     name: unified
     version: 9.2.2
     dependencies:
+      '@types/unist': registry.npmmirror.com/@types/unist/2.0.6
       bail: registry.npmmirror.com/bail/1.0.5
       extend: 3.0.2
       is-buffer: registry.npmmirror.com/is-buffer/2.0.5
@@ -6966,7 +6979,7 @@ packages:
       '@vue/compiler-dom': registry.npmmirror.com/@vue/compiler-dom/3.2.45
       '@vue/compiler-sfc': registry.npmmirror.com/@vue/compiler-sfc/3.2.45
       '@vue/runtime-dom': registry.npmmirror.com/@vue/runtime-dom/3.2.45
-      '@vue/server-renderer': registry.npmmirror.com/@vue/server-renderer/3.2.45
+      '@vue/server-renderer': registry.npmmirror.com/@vue/server-renderer/3.2.45_vue@3.2.45
       '@vue/shared': registry.npmmirror.com/@vue/shared/3.2.45
     dev: false
 

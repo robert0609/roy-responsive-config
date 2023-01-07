@@ -1,7 +1,8 @@
-import { fieldWatch, fieldEdit, fieldGroup, syncConfig, Responsive } from '..';
+import { reactive, ref, toRef } from 'vue';
+import { fieldWatch, fieldEdit, fieldGroup, syncConfig, Responsive, ResponsiveNode } from '..';
 
 class RoyItem {
-  @fieldEdit<'switch'>({
+  @fieldEdit({
     name: '默认值',
     type: 'switch',
     required: false,
@@ -12,7 +13,7 @@ class RoyItem {
   })
   value: number;
 
-  @fieldEdit<'select'>({
+  @fieldEdit({
     name: '表单项类型',
     type: 'select',
     required: true,
@@ -29,13 +30,13 @@ class RoyItem {
       ]
     }
   })
-  @fieldWatch<[number]>(['value'], function (newVal, oldVal, update) {
-    console.log(
-      'triggered watch: ',
-      JSON.stringify(newVal),
-      JSON.stringify(oldVal)
-    );
-  })
+  // @fieldWatch<[number]>(['value'], function (newVal, oldVal, update) {
+  //   console.log(
+  //     'triggered watch: ',
+  //     JSON.stringify(newVal),
+  //     JSON.stringify(oldVal)
+  //   );
+  // })
   name: string;
 
   constructor(value: number, name: string) {
@@ -55,17 +56,17 @@ export class RoyData {
 
   e: number[] = [3, 6];
 
-  @fieldWatch<[number]>(['f[0].value'], function (newVal, oldVal, update) {
-    // this.d = 'ppp';// 注意不要死循环
-    //@ts-ignore
-    update([
-      new RoyItem(8, 'hongyu'),
-      new RoyItem(18, '56hongyu'),
-      new RoyItem(800, 'hongyu'),
-      new RoyItem(1800, '56hongyu')
-    ]);
-  })
-  @syncConfig
+  // @fieldWatch<[number]>(['f[0].value'], function (newVal, oldVal, update) {
+  //   // this.d = 'ppp';// 注意不要死循环
+  //   //@ts-ignore
+  //   update([
+  //     new RoyItem(8, 'hongyu'),
+  //     new RoyItem(18, '56hongyu'),
+  //     new RoyItem(800, 'hongyu'),
+  //     new RoyItem(1800, '56hongyu')
+  //   ]);
+  // })
+  // @syncConfig
   @fieldGroup({
     name: '属性F',
     createNewFormItem() {
@@ -76,13 +77,54 @@ export class RoyData {
 
   g: RoyItem[] = [{ value: 9, name: 'ert' }];
 
+  h: RoyItem = new RoyItem(1800, '56hongyu');
+
   constructor() {}
 }
 
-(function () {
+async function wait(n: number) {
+  return await new Promise((resolve, reject) => {
+    setTimeout(resolve, n);
+  })
+}
+
+(async function () {
   const testData = new RoyData();
-  const resData = new Responsive<RoyData>(testData);
+  const reactiveTestData = reactive(testData);
+  const resData = new ResponsiveNode('reactiveTestData', 'root', ref(reactiveTestData));
   console.log('resData: ', resData);
   //@ts-ignore
   window.resData = resData;
+  //@ts-ignore
+  window.reactiveTestData = reactiveTestData;
+
+  await wait(100);
+
+  reactiveTestData.a = false;
+  await wait(10);
+  reactiveTestData.b = 'world';
+  await wait(10);
+  reactiveTestData.c = 100;
+  await wait(10);
+  reactiveTestData.d = 'TMD';
+  await wait(10);
+  reactiveTestData.e[1] = 9;
+  await wait(10);
+
+  reactiveTestData.e = [1,2,3,4];
+  await wait(10);
+  reactiveTestData.f[1].value = 20;
+  await wait(10);
+  reactiveTestData.f[0] = {value:100, name: ''};
+  await wait(10);
+  reactiveTestData.g[0].name = '567';
+  await wait(10);
+  reactiveTestData.h.name = 'hname';
+  await wait(10);
+  //@ts-ignore
+  reactiveTestData.d = { a: 100 };
+  await wait(10);
+  reactiveTestData.e = [...reactiveTestData.e, 5];
+  await wait(10);
 })();
+

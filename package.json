@@ -26,6 +26,7 @@
     "release": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
   },
   "dependencies": {
+    "mitt": "^3.0.0",
     "reflect-metadata": "^0.1.13",
     "roy-type-assert": "^0.1.8",
     "traverse": "^0.6.6",

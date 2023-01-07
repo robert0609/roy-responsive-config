@@ -1,13 +1,14 @@
 import {
   FormItemType,
   IFormItem,
-  FormItemProperties,
-  IFormItemGroup
+  IFormItemGroup,
+  IFormItemProperties,
+  FormItemValueType
 } from './type';
 import { fieldEdit, fieldGroup, fieldWatch, syncConfig } from './decorator';
 
 export class FormOption {
-  @fieldEdit<'text'>({
+  @fieldEdit({
     name: '选项值',
     type: 'text',
     required: true,
@@ -19,7 +20,7 @@ export class FormOption {
   })
   readonly value: string;
 
-  @fieldEdit<'text'>({
+  @fieldEdit({
     name: '选项名称',
     type: 'text',
     required: true,
@@ -37,153 +38,33 @@ export class FormOption {
   }
 }
 
-export class TextProperties implements FormItemProperties<'text'> {
-  @fieldEdit<'text'>({
-    name: '默认值',
-    type: 'text',
-    required: false,
-    readonly: false,
-    properties: {
-      defaultValue: '',
-      placeholder: '请输入默认值'
-    }
-  })
-  readonly defaultValue: string;
-
-  @fieldEdit<'text'>({
-    name: '占位文字',
-    type: 'text',
-    required: false,
-    readonly: false,
-    properties: {
-      defaultValue: '',
-      placeholder: '请输入占位文字'
-    }
-  })
-  readonly placeholder: string;
-
-  constructor(defaultValue = '', placeholder = '') {
-    this.defaultValue = defaultValue;
-    this.placeholder = placeholder;
+export class FormCondition {
+  readonly field: string;
+  readonly value: FormItemValueType;
+  constructor(field: string = '', value: FormItemValueType = '') {
+    this.field = field;
+    this.value = value;
   }
 }
 
-export class SelectProperties implements FormItemProperties<'select'> {
-  @fieldEdit<'text'>({
-    name: '默认值',
-    type: 'text',
-    required: false,
-    readonly: false,
-    properties: {
-      defaultValue: '',
-      placeholder: '请输入默认值'
-    }
-  })
-  readonly defaultValue: string;
+export class FormItemProperties implements IFormItemProperties {
+  defaultValue: FormItemValueType;
+  placeholder?: string;
+  options?: FormOption[];
 
-  @fieldEdit<'text'>({
-    name: '占位文字',
-    type: 'text',
-    required: false,
-    readonly: false,
-    properties: {
-      defaultValue: '',
-      placeholder: '请输入占位文字'
-    }
-  })
-  readonly placeholder: string;
-
-  @fieldGroup({
-    name: '下拉框选项',
-    createNewFormItem() {
-      return new FormOption('', '');
-    }
-  })
-  @syncConfig
-  readonly options: FormOption[];
-
-  constructor(defaultValue = '', placeholder = '', options: FormOption[] = []) {
+  constructor(
+    defaultValue: FormItemValueType = '',
+    placeholder?: string,
+    options?: FormOption[]
+  ) {
     this.defaultValue = defaultValue;
     this.placeholder = placeholder;
     this.options = options;
   }
 }
 
-export class RadioProperties implements FormItemProperties<'radio'> {
-  @fieldEdit<'text'>({
-    name: '默认值',
-    type: 'text',
-    required: false,
-    readonly: false,
-    properties: {
-      defaultValue: '',
-      placeholder: '请输入默认值'
-    }
-  })
-  readonly defaultValue: string;
-
-  @fieldGroup({
-    name: '单选框选项',
-    createNewFormItem() {
-      return new FormOption();
-    }
-  })
-  @syncConfig
-  readonly options: FormOption[];
-
-  constructor(defaultValue = '', options: FormOption[] = []) {
-    this.defaultValue = defaultValue;
-    this.options = options;
-  }
-}
-
-export class CheckboxProperties implements FormItemProperties<'checkbox'> {
-  @fieldEdit<'text'>({
-    name: '默认值',
-    type: 'text',
-    required: false,
-    readonly: false,
-    properties: {
-      defaultValue: '',
-      placeholder: '请输入默认值，多个值的话以半角逗号分隔'
-    }
-  })
-  readonly defaultValue: string[];
-
-  @fieldGroup({
-    name: '复选框属性',
-    createNewFormItem() {
-      return new FormOption();
-    }
-  })
-  @syncConfig
-  readonly options: FormOption[];
-
-  constructor(defaultValue: string[] = [], options: FormOption[] = []) {
-    this.defaultValue = defaultValue;
-    this.options = options;
-  }
-}
-
-export class SwitchProperties implements FormItemProperties<'switch'> {
-  @fieldEdit<'switch'>({
-    name: '默认值',
-    type: 'switch',
-    required: false,
-    readonly: false,
-    properties: {
-      defaultValue: false
-    }
-  })
-  readonly defaultValue: boolean;
-
-  constructor(defaultValue = false) {
-    this.defaultValue = defaultValue;
-  }
-}
-
-export class FormItem<F extends FormItemType> implements IFormItem<F> {
-  @fieldEdit<'text'>({
+export class FormItem implements IFormItem {
+  @fieldEdit({
     name: '字段名',
     type: 'text',
     required: true,
@@ -195,7 +76,7 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
   })
   readonly key: string;
 
-  @fieldEdit<'text'>({
+  @fieldEdit({
     name: '表单项名称',
     type: 'text',
     required: true,
@@ -207,7 +88,7 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
   })
   readonly name: string;
 
-  @fieldEdit<'select'>({
+  @fieldEdit({
     name: '表单项类型',
     type: 'select',
     required: true,
@@ -224,9 +105,9 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
       ]
     }
   })
-  readonly type: F;
+  readonly type: FormItemType;
 
-  @fieldEdit<'switch'>({
+  @fieldEdit({
     name: '是否必填',
     type: 'switch',
     required: true,
@@ -237,7 +118,7 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
   })
   readonly required: boolean;
 
-  @fieldEdit<'switch'>({
+  @fieldEdit({
     name: '是否只读',
     type: 'switch',
     required: true,
@@ -251,42 +132,21 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
   @fieldGroup({
     name: '其它属性'
   })
-  @fieldWatch<[F]>(['type'], ([newVal], [oldVal], update) => {
-    let properties: FormItemProperties<FormItemType>;
-    switch (newVal) {
-      case 'select': {
-        properties = new SelectProperties();
-        break;
-      }
-      case 'radio': {
-        properties = new RadioProperties();
-        break;
-      }
-      case 'checkbox': {
-        properties = new CheckboxProperties();
-        break;
-      }
-      case 'switch': {
-        properties = new SwitchProperties();
-        break;
-      }
-      default: {
-        properties = new TextProperties();
-        break;
-      }
-    }
-    update(properties);
+  readonly properties: FormItemProperties;
+
+  @fieldGroup({
+    name: '显示条件'
   })
-  @syncConfig
-  readonly properties: FormItemProperties<F>;
+  readonly condition?: FormCondition[];
 
   constructor(
     key = '',
     name = '',
-    type: F = 'text' as F,
+    type: FormItemType = 'text',
     required = false,
     readonly = false,
-    properties: FormItemProperties<F> = new TextProperties() as FormItemProperties<F>
+    properties = new FormItemProperties(),
+    condition?: FormCondition[]
   ) {
     this.key = key;
     this.name = name;
@@ -294,6 +154,7 @@ export class FormItem<F extends FormItemType> implements IFormItem<F> {
     this.required = required;
     this.readonly = readonly;
     this.properties = properties;
+    this.condition = condition;
   }
 }
 
@@ -302,10 +163,15 @@ export class FormItemGroup implements IFormItemGroup {
 
   readonly name: string;
 
-  children?: IFormItemGroup[];
+  readonly condition?: FormCondition[];
 
-  constructor(key = '', name = '') {
+  children?: IFormItemGroup[];
+  newFormItem?: () => void;
+  deleteFormItem?: (key: number | string) => void;
+
+  constructor(key = '', name = '', condition?: FormCondition[]) {
     this.key = key;
     this.name = name;
+    this.condition = condition;
   }
 }

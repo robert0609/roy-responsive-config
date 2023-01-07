@@ -28,45 +28,134 @@ import {
 
 const rootKey = '$root';
 
+let totalWatcherCount = 0;
+
 export class ResponsiveNode {
   private _reactiveConfig: IBaseFormItem;
 
   private _parent?: ResponsiveNode;
   private _children: ResponsiveNode[] = [];
 
+  private _unwatches: WatchStopHandle[] = [];
+
   constructor(
     public readonly key: string,
     public readonly name: string,
-    public readonly reactiveData: Ref<any>
+    private readonly reactiveData: Ref<UnwrapNestedRefs<any>>
   ) {
     this._reactiveConfig = reactive({
       key,
       name
     });
-  }
+    // create watcher
+    const unwatch = watch(this.reactiveData, (newVal, oldVal) => {
+      console.log(`!!!! watched: [${this.key.toString()}]`, newVal, oldVal)
 
-  setParent(parentNode: ResponsiveNode) {
-    this._parent = parentNode;
-    parentNode.appendChild(this);
-    // get metadata
-    const fieldMetadata = getFieldMetadata(
-      parentNode.reactiveData.value,
-      this.key
-    );
-    if (!!fieldMetadata) {
-      if (fieldMetadata.autoSyncConfig === true) {
-        // create auto sync config watcher
-        const unwatch = watch(this.reactiveData, (newVal) => {
-          // sync config
-          this.syncConfig(newVal);
+      this.dispose({ skipDestroyOwnWatcher: true });
+      // traverse children
+      const obj = newVal;
+      if (!isPrimitiveType(obj)) {
+        if (isArray(obj)) {
+          obj.forEach((v, i) => {
+            const child = new ResponsiveNode(i.toString(), i.toString(), toRef(obj, i));
+            this.appendChild(child);
+          });
+        } else {
+          Object.entries(obj).forEach(([k, v]) => {
+            const child = new ResponsiveNode(k, k, toRef(obj, k));
+            this.appendChild(child);
+          });
+        }
+      }
+    });
+
+    this._unwatches.push(unwatch);
+    console.log('current watcher count: ', ++totalWatcherCount);
+
+    // traverse children
+    const obj = reactiveData.value;
+    if (!isPrimitiveType(obj)) {
+      if (isArray(obj)) {
+        obj.forEach((v, i) => {
+          const child = new ResponsiveNode(i.toString(), i.toString(), toRef(obj, i));
+          this.appendChild(child);
+        });
+      } else {
+        Object.entries(obj).forEach(([k, v]) => {
+          const child = new ResponsiveNode(k, k, toRef(obj, k));
+          this.appendChild(child);
         });
       }
     }
   }
 
-  private appendChild(childNode: ResponsiveNode) {
-    this._children.push(childNode);
+  private dispose({ skipDestroyOwnWatcher = false } = {}) {
+    if (!skipDestroyOwnWatcher) {
+      this._unwatches.forEach(fn => fn());
+      totalWatcherCount -= this._unwatches.length;
+      this._unwatches = [];
+    }
+    this._children.forEach(child => child.dispose());
+
+    this.clearChildren();
   }
+
+  private setParent(parentNode?: ResponsiveNode) {
+    // check if has original parent
+    if (!parentNode) {
+      // clear parent
+      this._parent = undefined;
+    } else {
+      // finally confirm new parent
+      this._parent = parentNode;
+    }
+
+
+
+    // // get metadata
+    // const fieldMetadata = getFieldMetadata(
+    //   parentNode._reactiveData.value,
+    //   this.key
+    // );
+    // if (!!fieldMetadata) {
+    //   if (fieldMetadata.autoSyncConfig === true) {
+    //     // create auto sync config watcher
+    //     const unwatch = watch(this._reactiveData, (newVal) => {
+    //       // sync config
+    //       this.syncConfig(newVal);
+    //     });
+    //   }
+    // }
+  }
+
+  private appendChild(childNode: ResponsiveNode) {
+    if (this._children.findIndex(c => c.key === childNode.key) > -1) {
+      throw new Error(`append child responsive node failed: already exists`);
+    }
+    if (!!childNode._parent) {
+      throw new Error(`append child responsive node failed: child already has another parent`);
+    }
+    this._children.push(childNode);
+
+    childNode.setParent(this);
+  }
+
+  private removeChild(childNode: ResponsiveNode) {
+    const deleteIndex = this._children.findIndex(c => c.key === childNode.key);
+    if (deleteIndex > -1) {
+      this._children.splice(deleteIndex, 1);
+
+      childNode.setParent();
+    }
+  }
+
+  private clearChildren() {
+    this._children.forEach(childNode => childNode.setParent());
+    this._children = [];
+  }
+
+
+
 
   private syncConfig(newVal: any) {
     if (isPrimitiveType(newVal)) {
@@ -75,7 +164,7 @@ export class ResponsiveNode {
         delete this._reactiveConfig.children;
         delete this._reactiveConfig.newFormItem;
         delete this._reactiveConfig.deleteFormItem;
-        const n = this._reactiveConfig as IFormItem<'text'>;
+        const n = this._reactiveConfig as IFormItem;
         n.type = 'text';
         n.required = false;
         n.readonly = false;
@@ -160,7 +249,7 @@ export class ResponsiveNode {
               defaultValue: '',
               placeholder: `请输入${p}`
             }
-          } as IFormItem<'text'>);
+          } as IFormItem);
         }
       } else if (fieldMetadata.groupConfig !== undefined) {
         let newFormItem: (() => void) | undefined;
@@ -340,7 +429,7 @@ export class Responsive<T extends object = object> {
         delete oldConfigNode.children;
         delete oldConfigNode.newFormItem;
         delete oldConfigNode.deleteFormItem;
-        const n = oldConfigNode as IFormItem<'text'>;
+        const n = oldConfigNode as IFormItem;
         n.type = 'text';
         n.required = false;
         n.readonly = false;
@@ -432,7 +521,7 @@ export class Responsive<T extends object = object> {
               defaultValue: '',
               placeholder: `请输入${p}`
             }
-          } as IFormItem<'text'>);
+          } as IFormItem);
         }
       } else if (fieldMetadata.groupConfig !== undefined) {
         let newFormItem: (() => void) | undefined;

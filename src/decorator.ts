@@ -1,4 +1,4 @@
-import { FormItemType, IFormItem, IFormItemGroup } from './type';
+import { IFormItem, IFormItemGroup } from './type';
 
 const fieldMetadataKey = Symbol('fieldMetadataKey');
 
@@ -15,9 +15,11 @@ type FieldGroupParameterType = Omit<
   createNewFormItem?: () => any;
 };
 
+type FieldEditParameterType = Omit<IFormItem, 'key'>;
+
 interface IFieldMetadata {
   groupConfig?: FieldGroupParameterType;
-  editConfig?: Omit<IFormItem<FormItemType>, 'key'>;
+  editConfig?: FieldEditParameterType;
   watch?: {
     fieldNames: string[];
     handler: WatchHandlerType;
@@ -47,8 +49,8 @@ export function fieldGroup(config: FieldGroupParameterType) {
  * Property Decorator
  * @param formItemConfig form item's meta config that is used to render config UI
  */
-export function fieldEdit<F extends FormItemType = FormItemType>(
-  formItemConfig: Omit<IFormItem<F>, 'key'>
+export function fieldEdit(
+  formItemConfig: FieldEditParameterType
 ) {
   return function (target: any, p: string) {
     const originalMetadata = getFieldMetadata(target, p) || {};
