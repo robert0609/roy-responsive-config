@@ -1,12 +1,5 @@
 import { reactive, ref, toRef } from 'vue';
-import {
-  fieldWatch,
-  fieldEdit,
-  fieldGroup,
-  syncConfig,
-  Responsive,
-  ResponsiveNode
-} from '..';
+import { fieldEdit, fieldGroup, ResponsiveNode } from '..';
 
 class RoyItem {
   @fieldEdit({

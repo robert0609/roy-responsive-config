@@ -1,40 +1,4 @@
-export type FormItemType = keyof IFormItemPropertiesMap;
-export type FormItemPropertiesType<F extends FormItemType> = IFormItemPropertiesMap[F];
-
-interface IFormItemTextProperties {
-  defaultValue: string;
-  placeholder: string;
-}
-
-interface IFormItemSelectProperties {
-  defaultValue: string;
-  placeholder: string;
-  options: {
-    value: string;
-    name: string;
-  }[];
-}
-
-interface IFormItemRadioProperties {
-  defaultValue: string;
-  options: {
-    value: string;
-    name: string;
-  }[];
-}
-
-interface IFormItemCheckboxProperties {
-  defaultValue: string[];
-  options: {
-    value: string;
-    name: string;
-  }[];
-}
-
-interface IFormItemSwitchProperties {
-  defaultValue: boolean;
-}
-
+export type FormItemType = 'text' | 'select' | 'radio' | 'checkbox' | 'switch';
 export type FormItemValueType = boolean | string | string[];
 
 export interface IFormItemProperties {
@@ -46,18 +10,10 @@ export interface IFormItemProperties {
   }[];
 }
 
-export interface IFormItemPropertiesMap {
-  text: IFormItemTextProperties;
-  select: IFormItemSelectProperties;
-  radio: IFormItemRadioProperties;
-  checkbox: IFormItemCheckboxProperties;
-  switch: IFormItemSwitchProperties;
-}
-
 export interface IBaseFormItem {
   key: string; // 内部表单项对应的数据字段名
   name: string; // 页面上展示的表单名称
-  condition?: { field: string; value: FormItemValueType; }[]; // 表单项展示的条件
+  condition?: { field: string; value: FormItemValueType }[]; // 表单项展示的条件
 }
 
 export interface IFormItem extends IBaseFormItem {
@@ -77,9 +33,7 @@ export function isBaseFormItem(o: any): o is IBaseFormItem {
   return o.key !== undefined && o.name !== undefined;
 }
 
-export function isFormItem(
-  o: any
-): o is IFormItem {
+export function isFormItem(o: any): o is IFormItem {
   return !isFormItemGroup(o) && isBaseFormItem(o);
 }
 

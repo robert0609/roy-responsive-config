@@ -5,7 +5,7 @@ import {
   IFormItemProperties,
   FormItemValueType
 } from './type';
-import { fieldEdit, fieldGroup, fieldWatch, syncConfig } from './decorator';
+import { fieldEdit, fieldGroup } from './decorator';
 
 export class FormOption {
   @fieldEdit({
@@ -41,7 +41,7 @@ export class FormOption {
 export class FormCondition {
   readonly field: string;
   readonly value: FormItemValueType;
-  constructor(field: string = '', value: FormItemValueType = '') {
+  constructor(field = '', value: FormItemValueType = '') {
     this.field = field;
     this.value = value;
   }
