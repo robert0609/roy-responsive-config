@@ -246,7 +246,7 @@ export class ResponsiveNode {
     this._children.forEach((child) => child.dispose());
 
     this.clearChildren();
-    this._reactiveConfig = reactive({ key: this.key, name: this.key });
+    this._reactiveConfig = undefined;
   }
 
   private setParent(parentNode?: ResponsiveNode) {
