@@ -25,7 +25,7 @@ import {
   isPrimitiveType,
   VariableType
 } from 'roy-type-assert';
-import { FormItem, FormItemGroup } from './form';
+import { FormCondition, FormItem, FormItemGroup } from './form';
 import mitt, { Handler } from 'mitt';
 
 const rootKey = '$root';
@@ -44,6 +44,8 @@ export class ResponsiveNode {
   private _children: ResponsiveNode[] = [];
 
   private _unwatches: WatchStopHandle[] = [];
+
+  private onCondition?: (evt: ResponsiveEvents['condition']) => void;
 
   constructor(
     public readonly key: string,
@@ -102,7 +104,25 @@ export class ResponsiveNode {
         ...fieldMetadata.editConfig!
       });
     }
+    // create condition watcher
+    if (!!baseFormItem.condition) {
+      this.createConditionListener(baseFormItem.condition);
+    }
     return baseFormItem;
+  }
+
+  private createConditionListener(conditions: FormCondition[]) {
+    let lastReactiveData: UnwrapNestedRefs<any> | null = null;
+
+    this.onCondition = (evt: ResponsiveEvents['condition']) => {
+      if (true) {
+        this.refReactiveData.value = lastReactiveData;
+      } else {
+        lastReactiveData = this.refReactiveData.value;
+        this.refReactiveData.value = undefined;
+      }
+    };
+    emitter.on('condition', this.onCondition);
   }
 
   private createChildren(reactiveData: any) {
@@ -152,6 +172,9 @@ export class ResponsiveNode {
     if (!skipDestroyOwnWatcher) {
       this._unwatches.forEach((fn) => fn());
       this._unwatches = [];
+    }
+    if (!!this.onCondition) {
+      emitter.off('condition', this.onCondition);
     }
     this._children.forEach((child) => child.dispose());
 
