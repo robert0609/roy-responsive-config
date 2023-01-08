@@ -7,6 +7,7 @@ import {
   toRaw,
   toRef,
   toRefs,
+  unref,
   UnwrapNestedRefs,
   watch,
   WatchStopHandle
@@ -22,7 +23,8 @@ import {
 import {
   getType,
   isArray,
-  isPrimitiveType,
+  isPrimitiveType as isPrimitiveTypeOriginal,
+  isNull,
   VariableType
 } from 'roy-type-assert';
 import { FormCondition, FormItem, FormItemGroup } from './form';
@@ -30,6 +32,10 @@ import mitt, { Handler } from 'mitt';
 
 const rootKey = '$root';
 const parentKey = Symbol('parent');
+
+function isPrimitiveType(o: any) {
+  return isPrimitiveTypeOriginal(o) || isNull(o);
+}
 
 type ResponsiveEvents = {
   ['condition']: { watchFieldPath: string[]; newVal: any };
@@ -45,7 +51,11 @@ export class ResponsiveNode {
 
   private _unwatches: WatchStopHandle[] = [];
 
-  private onCondition?: (evt: ResponsiveEvents['condition']) => void;
+  private _onCondition?: Handler<ResponsiveEvents['condition']>;
+
+  private get fullPath(): string[] {
+    return [...(!this[parentKey] ? [] : this[parentKey].fullPath), this.key];
+  }
 
   constructor(
     public readonly key: string,
@@ -60,6 +70,8 @@ export class ResponsiveNode {
         this._reactiveConfig = this.createConfig(newVal);
         // create children
         this.createChildren(newVal);
+
+        emitter.emit('condition', { watchFieldPath: this.fullPath, newVal });
       })
     );
 
@@ -67,6 +79,8 @@ export class ResponsiveNode {
     this._reactiveConfig = this.createConfig(refReactiveData.value);
     // create children
     this.createChildren(refReactiveData.value);
+    // create condition watcher
+    this.createConditionListener();
   }
 
   private createConfig(reactiveData: any) {
@@ -107,28 +121,54 @@ export class ResponsiveNode {
         ...fieldMetadata.editConfig!
       });
     }
-    // create condition watcher
-    if (!!baseFormItem.condition) {
-      this.createConditionListener(baseFormItem.condition);
-    }
     return baseFormItem;
   }
 
-  private createConditionListener(conditions: FormCondition[]) {
-    let lastReactiveData: UnwrapNestedRefs<any> | null = null;
+  private createConditionListener() {
+    const conditions =
+      this.metadata?.editConfig?.condition ||
+      this.metadata?.groupConfig?.condition;
+    if (!conditions) {
+      return;
+    }
 
-    this.onCondition = (evt: ResponsiveEvents['condition']) => {
+    let lastReactiveData: UnwrapNestedRefs<any> | undefined;
+
+    const checkByConditions = () => {
       if (this.checkConditions(conditions)) {
-        this.refReactiveData.value = lastReactiveData;
+        if (lastReactiveData !== undefined) {
+          this.refReactiveData.value = lastReactiveData;
+          lastReactiveData = undefined;
+        }
       } else {
         lastReactiveData = this.refReactiveData.value;
         this.refReactiveData.value = undefined;
       }
     };
-    emitter.on('condition', this.onCondition);
+
+    this._onCondition = ({
+      watchFieldPath,
+      newVal
+    }: ResponsiveEvents['condition']) => {
+      if (
+        conditions.some((condition) =>
+          this.pathIsWatchedCondition(watchFieldPath, condition.field)
+        )
+      ) {
+        checkByConditions();
+      }
+    };
+    // 创建完先执行一次
+    setTimeout(() => {
+      checkByConditions();
+    }, 0);
+    emitter.on('condition', this._onCondition);
   }
 
   private createChildren(reactiveData: any) {
+    if (reactiveData === undefined) {
+      return;
+    }
     const fieldMetadata = this.metadata;
     if (
       fieldMetadata === undefined ||
@@ -175,9 +215,9 @@ export class ResponsiveNode {
     if (!skipDestroyOwnWatcher) {
       this._unwatches.forEach((fn) => fn());
       this._unwatches = [];
-    }
-    if (!!this.onCondition) {
-      emitter.off('condition', this.onCondition);
+      if (!!this._onCondition) {
+        emitter.off('condition', this._onCondition);
+      }
     }
     this._children.forEach((child) => child.dispose());
 
@@ -248,15 +288,19 @@ export class ResponsiveNode {
   }
 
   private getDataByPath(fieldPath: string) {
-    if (!this[parentKey]) {
-      return;
-    }
+    const node = this.getNodeByPath(fieldPath);
+    return node?.refReactiveData.value;
+  }
 
+  private getNodeByPath(fieldPath: string) {
     const findParent = () => {
       if (key.length > 0) {
         if (allIsPoint) {
           if (key.length > 1) {
             // '..'
+            if (!currentParentNode) {
+              return false;
+            }
             const nextNode = currentParentNode[parentKey];
             if (!nextNode) {
               return false;
@@ -265,6 +309,14 @@ export class ResponsiveNode {
           }
         } else {
           // 'xx'
+          if (!currentParentNode) {
+            if (key === this.key) {
+              currentParentNode = this;
+              return true;
+            } else {
+              return false;
+            }
+          }
           const nextNode = currentParentNode._children.find(
             (node) => node.key === key
           );
@@ -306,139 +358,32 @@ export class ResponsiveNode {
     if (!findParent()) {
       return;
     }
-    return currentParentNode.refReactiveData.value;
+
+    if (!currentParentNode) {
+      return;
+    }
+    return currentParentNode;
   }
 
-  private getConfigNodeByPath(configNode: IFormItemGroup, path: string[]) {
-    let node = configNode;
-    path.forEach((p) => {
-      let nextNode: IFormItemGroup | undefined;
-      if (node.children !== undefined && node.children.length > 0) {
-        nextNode = node.children.find((c) => c.key === p);
+  private pathIsWatchedCondition(
+    absolutePath: string[],
+    fieldPath: string
+  ): boolean {
+    const node = this.getNodeByPath(fieldPath);
+    if (!node) {
+      return false;
+    }
+    const fullPath = node.fullPath;
+    if (absolutePath.length !== fullPath.length) {
+      return false;
+    }
+    for (let i = 0; i < fullPath.length; ++i) {
+      if (fullPath[i] === absolutePath[i]) {
+        continue;
       }
-      if (!nextNode) {
-        throw new Error(`解析模板配置失败：未找到[${p}]字段`);
-      }
-      node = nextNode;
-    });
-    return node;
-  }
-
-  private generateConfig(
-    key: string,
-    name: string,
-    nodeData: object,
-    parentPath: string[] = []
-  ): IFormItemGroup {
-    const root: IFormItemGroup = {
-      key,
-      name,
-      children: []
-    };
-
-    const that = this // eslint-disable-line
-    traverse(nodeData).forEach(function (val) {
-      if (!this.parent) {
-        return;
-      }
-      const configNode = that.getConfigNodeByPath(
-        root,
-        this.path.slice(0, this.path.length - 1)
-      );
-      if (configNode.children === undefined) {
-        configNode.children = [];
-      }
-      const p = this.key!;
-      const fieldMetadata = getFieldMetadata(this.parent.node, p);
-      if (
-        fieldMetadata === undefined ||
-        (fieldMetadata.groupConfig === undefined &&
-          fieldMetadata.editConfig === undefined)
-      ) {
-        if (isArray(val) || getType(val) === VariableType.bObject) {
-          configNode.children.push({
-            key: p,
-            name: p.toString(),
-            children: []
-          });
-        } else {
-          configNode.children.push({
-            key: p,
-            name: p,
-            type: 'text',
-            required: false,
-            readonly: false,
-            properties: {
-              defaultValue: '',
-              placeholder: `请输入${p}`
-            }
-          } as IFormItem);
-        }
-      } else if (fieldMetadata.groupConfig !== undefined) {
-        let newFormItem: (() => void) | undefined;
-        let deleteFormItem: ((key: number | string) => void) | undefined;
-        // if (!!fieldMetadata.groupConfig.createNewFormItem) {
-        //   // 如果是表单项组的情况下，如果配置了新建表单项的回调函数，则这里初始化新建函数给UI调用
-        //   newFormItem = () => {
-        //     const currentVal = this.parent!.node[p];
-        //     if (isArray(currentVal)) {
-        //       const arr = toRaw(currentVal);
-        //       arr.push(fieldMetadata.groupConfig!.createNewFormItem!());
-        //       this.parent!.node[p] = arr;
-        //     } else if (getType(currentVal) === VariableType.bObject) {
-        //       const [k, v] = fieldMetadata.groupConfig!.createNewFormItem!();
-        //       this.parent!.node[p] = Object.assign({}, toRaw(currentVal), {
-        //         [k]: v
-        //       });
-        //     } else {
-        //       throw new Error(
-        //         `Create new form item failed! fieldGroup decorator can't attached onto Non-Object or Non-Array field.`
-        //       );
-        //     }
-        //     that.patchConfig(
-        //       [...parentPath, ...this.parent!.path],
-        //       p,
-        //       this.parent!.node[p]
-        //     );
-        //   };
-
-        //   deleteFormItem = (key: number | string) => {
-        //     const currentVal = this.parent!.node[p];
-        //     if (isArray(currentVal)) {
-        //       const arr = toRaw(currentVal);
-        //       arr.splice(key as number, 1);
-        //       this.parent!.node[p] = arr;
-        //     } else if (getType(currentVal) === VariableType.bObject) {
-        //       const obj = toRaw(currentVal);
-        //       delete obj[key];
-        //       this.parent!.node[p] = Object.assign({}, obj);
-        //     } else {
-        //       throw new Error(
-        //         `Create new form item failed! fieldGroup decorator can't attached onto Non-Object or Non-Array field.`
-        //       );
-        //     }
-        //     that.patchConfig(
-        //       [...parentPath, ...this.parent!.path],
-        //       p,
-        //       this.parent!.node[p]
-        //     );
-        //   };
-        // }
-        configNode.children.push({
-          key: p,
-          name: fieldMetadata.groupConfig.name,
-          newFormItem,
-          deleteFormItem,
-          children: []
-        });
-      } else if (fieldMetadata.editConfig !== undefined) {
-        configNode.children.push({
-          key: p,
-          ...fieldMetadata.editConfig
-        });
-      }
-    });
-    return root;
+      return false;
+    }
+    return true;
   }
 }
 

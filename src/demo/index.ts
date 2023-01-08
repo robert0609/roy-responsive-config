@@ -86,6 +86,12 @@ export class RoyData {
   // @syncConfig
   @fieldGroup({
     name: '属性F',
+    condition: [
+      {
+        field: './d',
+        value: 'no'
+      }
+    ],
     createNewFormItem() {
       return new RoyItem(-1, '');
     }
@@ -117,30 +123,30 @@ async function wait(n: number) {
 
   await wait(100);
 
-  reactiveTestData.a = false;
-  await wait(10);
-  reactiveTestData.b = 'world';
-  await wait(10);
-  reactiveTestData.c = 100;
-  await wait(10);
-  reactiveTestData.d = 'TMD';
-  await wait(10);
-  reactiveTestData.e[1] = 9;
-  await wait(10);
+  // reactiveTestData.a = false;
+  // await wait(10);
+  // reactiveTestData.b = 'world';
+  // await wait(10);
+  // reactiveTestData.c = 100;
+  // await wait(10);
+  // reactiveTestData.d = 'TMD';
+  // await wait(10);
+  // reactiveTestData.e[1] = 9;
+  // await wait(10);
 
-  reactiveTestData.e = [1, 2, 3, 4];
-  await wait(10);
-  reactiveTestData.f[1].value = 20;
-  await wait(10);
-  reactiveTestData.f[0] = { value: 100, name: '' };
-  await wait(10);
-  reactiveTestData.g[0].name = '567';
-  await wait(10);
-  reactiveTestData.h.name = 'hname';
-  await wait(10);
-  //@ts-ignore
-  reactiveTestData.d = { a: 100 };
-  await wait(10);
-  reactiveTestData.e = [...reactiveTestData.e, 5];
-  await wait(10);
+  // reactiveTestData.e = [1, 2, 3, 4];
+  // await wait(10);
+  // reactiveTestData.f[1].value = 20;
+  // await wait(10);
+  // reactiveTestData.f[0] = { value: 100, name: '' };
+  // await wait(10);
+  // reactiveTestData.g[0].name = '567';
+  // await wait(10);
+  // reactiveTestData.h.name = 'hname';
+  // await wait(10);
+  // //@ts-ignore
+  // reactiveTestData.d = { a: 100 };
+  // await wait(10);
+  // reactiveTestData.e = [...reactiveTestData.e, 5];
+  // await wait(10);
 })();
