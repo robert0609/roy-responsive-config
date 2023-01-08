@@ -38,7 +38,7 @@ type ResponsiveEvents = {
 const emitter = mitt<ResponsiveEvents>();
 
 export class ResponsiveNode {
-  private _reactiveConfig: UnwrapNestedRefs<IBaseFormItem>;
+  private _reactiveConfig?: UnwrapNestedRefs<IBaseFormItem>;
 
   private [parentKey]?: ResponsiveNode;
   private _children: ResponsiveNode[] = [];
@@ -70,6 +70,9 @@ export class ResponsiveNode {
   }
 
   private createConfig(reactiveData: any) {
+    if (reactiveData === undefined) {
+      return;
+    }
     const fieldMetadata = this.metadata;
     let baseFormItem: IBaseFormItem;
     if (
@@ -115,7 +118,7 @@ export class ResponsiveNode {
     let lastReactiveData: UnwrapNestedRefs<any> | null = null;
 
     this.onCondition = (evt: ResponsiveEvents['condition']) => {
-      if (true) {
+      if (this.checkConditions(conditions)) {
         this.refReactiveData.value = lastReactiveData;
       } else {
         lastReactiveData = this.refReactiveData.value;
@@ -221,6 +224,89 @@ export class ResponsiveNode {
   private clearChildren() {
     this._children.forEach((childNode) => childNode.setParent());
     this._children = [];
+  }
+
+  private checkConditions(conditions: FormCondition[]) {
+    let result = true;
+    for (const condition of conditions) {
+      const val = this.getDataByPath(condition.field);
+      const targetVal = condition.value;
+      if (isArray(targetVal)) {
+        if (isArray(val)) {
+          result = val.sort().toString() === targetVal.sort().toString();
+        } else {
+          result = false;
+        }
+      } else {
+        result = targetVal === val;
+      }
+      if (!result) {
+        break;
+      }
+    }
+    return result;
+  }
+
+  private getDataByPath(fieldPath: string) {
+    if (!this[parentKey]) {
+      return;
+    }
+
+    const findParent = () => {
+      if (key.length > 0) {
+        if (allIsPoint) {
+          if (key.length > 1) {
+            // '..'
+            const nextNode = currentParentNode[parentKey];
+            if (!nextNode) {
+              return false;
+            }
+            currentParentNode = nextNode;
+          }
+        } else {
+          // 'xx'
+          const nextNode = currentParentNode._children.find(
+            (node) => node.key === key
+          );
+          if (!nextNode) {
+            return false;
+          }
+          currentParentNode = nextNode;
+        }
+      }
+      key = '';
+      allIsPoint = true;
+      return true;
+    };
+
+    let currentParentNode = this[parentKey];
+    let key = '';
+    let allIsPoint = true;
+    for (let i = 0; i < fieldPath.length; ++i) {
+      const c = fieldPath[i];
+      switch (c) {
+        case '.': {
+          key += c;
+          break;
+        }
+        case '/':
+        case '\\': {
+          if (!findParent()) {
+            return;
+          }
+          break;
+        }
+        default: {
+          key += c;
+          allIsPoint = false;
+          break;
+        }
+      }
+    }
+    if (!findParent()) {
+      return;
+    }
+    return currentParentNode.refReactiveData.value;
   }
 
   private getConfigNodeByPath(configNode: IFormItemGroup, path: string[]) {
