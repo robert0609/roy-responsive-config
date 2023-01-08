@@ -12,7 +12,7 @@ import {
   WatchStopHandle
 } from 'vue';
 import traverse from 'traverse';
-import { getFieldMetadata } from './decorator';
+import { getFieldMetadata, IFieldMetadata } from './decorator';
 import {
   IFormItemGroup,
   IFormItem,
@@ -28,18 +28,20 @@ import {
 import { FormItem, FormItemGroup } from './form';
 
 const rootKey = '$root';
+const parentKey = Symbol('parent');
 
 export class ResponsiveNode {
   private _reactiveConfig: UnwrapNestedRefs<IBaseFormItem>;
 
-  private _parent?: ResponsiveNode;
+  private [parentKey]?: ResponsiveNode;
   private _children: ResponsiveNode[] = [];
 
   private _unwatches: WatchStopHandle[] = [];
 
   constructor(
     public readonly key: string,
-    private readonly refReactiveData: Ref<UnwrapNestedRefs<any>>
+    private readonly refReactiveData: Ref<UnwrapNestedRefs<any>>,
+    private readonly metadata?: IFieldMetadata
   ) {
     // create watcher
     this._unwatches.push(
@@ -59,9 +61,7 @@ export class ResponsiveNode {
   }
 
   private createConfig(reactiveData: any) {
-    const fieldMetadata = !this._parent
-      ? undefined
-      : getFieldMetadata(this._parent.refReactiveData.value, this.key);
+    const fieldMetadata = this.metadata;
     let baseFormItem: IBaseFormItem;
     if (
       fieldMetadata === undefined ||
@@ -99,9 +99,7 @@ export class ResponsiveNode {
   }
 
   private createChildren(reactiveData: any) {
-    const fieldMetadata = !this._parent
-      ? undefined
-      : getFieldMetadata(this._parent.refReactiveData.value, this.key);
+    const fieldMetadata = this.metadata;
     if (
       fieldMetadata === undefined ||
       (fieldMetadata.groupConfig === undefined &&
@@ -125,13 +123,18 @@ export class ResponsiveNode {
         reactiveData.forEach((v, i) => {
           const child = new ResponsiveNode(
             i.toString(),
-            toRef(reactiveData, i)
+            toRef(reactiveData, i),
+            getFieldMetadata(reactiveData, i.toString())
           );
           this.appendChild(child);
         });
       } else {
         Object.entries(reactiveData).forEach(([k, v]) => {
-          const child = new ResponsiveNode(k, toRef(reactiveData, k));
+          const child = new ResponsiveNode(
+            k,
+            toRef(reactiveData, k),
+            getFieldMetadata(reactiveData, k)
+          );
           this.appendChild(child);
         });
       }
@@ -153,10 +156,10 @@ export class ResponsiveNode {
     // check if has original parent
     if (!parentNode) {
       // clear parent
-      this._parent = undefined;
+      this[parentKey] = undefined;
     } else {
       // finally confirm new parent
-      this._parent = parentNode;
+      this[parentKey] = parentNode;
     }
   }
 
@@ -164,7 +167,7 @@ export class ResponsiveNode {
     if (this._children.findIndex((c) => c.key === childNode.key) > -1) {
       throw new Error(`append child responsive node failed: already exists`);
     }
-    if (!!childNode._parent) {
+    if (!!childNode[parentKey]) {
       throw new Error(
         `append child responsive node failed: child already has another parent`
       );
@@ -188,35 +191,6 @@ export class ResponsiveNode {
   private clearChildren() {
     this._children.forEach((childNode) => childNode.setParent());
     this._children = [];
-  }
-
-  private syncConfig(newVal: any) {
-    if (isPrimitiveType(newVal)) {
-      // 如果原来节点的配置是group的时候，要改成表单项的配置 TODO: ResponsiveNode测试一下这个情况
-      if (isFormItemGroup(this._reactiveConfig)) {
-        delete this._reactiveConfig.children;
-        delete this._reactiveConfig.newFormItem;
-        delete this._reactiveConfig.deleteFormItem;
-        const n = this._reactiveConfig as IFormItem;
-        n.type = 'text';
-        n.required = false;
-        n.readonly = false;
-        n.properties = {
-          defaultValue: '',
-          placeholder: `请输入${n.name}`
-        };
-      }
-    } else {
-      // object type
-      if (isArray(newVal)) {
-        newVal.forEach((val, idx) => {
-          const strIdx = idx.toString();
-          const childNode = new ResponsiveNode(strIdx, ref(val));
-          childNode.setParent(this);
-        });
-      } else {
-      }
-    }
   }
 
   private getConfigNodeByPath(configNode: IFormItemGroup, path: string[]) {

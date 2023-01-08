@@ -17,7 +17,7 @@ type FieldGroupParameterType = Omit<
 
 type FieldEditParameterType = Omit<IFormItem, 'key'>;
 
-interface IFieldMetadata {
+export interface IFieldMetadata {
   groupConfig?: FieldGroupParameterType;
   editConfig?: FieldEditParameterType;
   watch?: {
@@ -49,9 +49,7 @@ export function fieldGroup(config: FieldGroupParameterType) {
  * Property Decorator
  * @param formItemConfig form item's meta config that is used to render config UI
  */
-export function fieldEdit(
-  formItemConfig: FieldEditParameterType
-) {
+export function fieldEdit(formItemConfig: FieldEditParameterType) {
   return function (target: any, p: string) {
     const originalMetadata = getFieldMetadata(target, p) || {};
     Reflect.defineMetadata(

@@ -1,5 +1,12 @@
 import { reactive, ref, toRef } from 'vue';
-import { fieldWatch, fieldEdit, fieldGroup, syncConfig, Responsive, ResponsiveNode } from '..';
+import {
+  fieldWatch,
+  fieldEdit,
+  fieldGroup,
+  syncConfig,
+  Responsive,
+  ResponsiveNode
+} from '..';
 
 class RoyItem {
   @fieldEdit({
@@ -54,6 +61,16 @@ export class RoyData {
 
   d?: string;
 
+  // @fieldEdit({
+  //   name: 'id列表',
+  //   type: 'text',
+  //   required: false,
+  //   readonly: false,
+  //   properties: {
+  //     defaultValue: false,
+  //     placeholder: '请输入id列表'
+  //   }
+  // })
   e: number[] = [3, 6];
 
   // @fieldWatch<[number]>(['f[0].value'], function (newVal, oldVal, update) {
@@ -85,13 +102,13 @@ export class RoyData {
 async function wait(n: number) {
   return await new Promise((resolve, reject) => {
     setTimeout(resolve, n);
-  })
+  });
 }
 
 (async function () {
   const testData = new RoyData();
   const reactiveTestData = reactive(testData);
-  const resData = new ResponsiveNode('reactiveTestData', 'root', ref(reactiveTestData));
+  const resData = new ResponsiveNode('reactiveTestData', ref(reactiveTestData));
   console.log('resData: ', resData);
   //@ts-ignore
   window.resData = resData;
@@ -111,11 +128,11 @@ async function wait(n: number) {
   reactiveTestData.e[1] = 9;
   await wait(10);
 
-  reactiveTestData.e = [1,2,3,4];
+  reactiveTestData.e = [1, 2, 3, 4];
   await wait(10);
   reactiveTestData.f[1].value = 20;
   await wait(10);
-  reactiveTestData.f[0] = {value:100, name: ''};
+  reactiveTestData.f[0] = { value: 100, name: '' };
   await wait(10);
   reactiveTestData.g[0].name = '567';
   await wait(10);
@@ -127,4 +144,3 @@ async function wait(n: number) {
   reactiveTestData.e = [...reactiveTestData.e, 5];
   await wait(10);
 })();
-
