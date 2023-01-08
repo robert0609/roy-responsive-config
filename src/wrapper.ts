@@ -25,11 +25,12 @@ import {
   isPrimitiveType,
   VariableType
 } from 'roy-type-assert';
+import { FormItem, FormItemGroup } from './form';
 
 const rootKey = '$root';
 
 export class ResponsiveNode {
-  private _reactiveConfig: IBaseFormItem;
+  private _reactiveConfig: UnwrapNestedRefs<IBaseFormItem>;
 
   private _parent?: ResponsiveNode;
   private _children: ResponsiveNode[] = [];
@@ -38,56 +39,99 @@ export class ResponsiveNode {
 
   constructor(
     public readonly key: string,
-    public readonly name: string,
-    private readonly reactiveData: Ref<UnwrapNestedRefs<any>>
+    private readonly refReactiveData: Ref<UnwrapNestedRefs<any>>
   ) {
-    this._reactiveConfig = reactive({
-      key,
-      name
-    });
     // create watcher
-    const unwatch = watch(this.reactiveData, (newVal, oldVal) => {
-      console.log(`!!!! watched: [${this.key.toString()}]`, newVal, oldVal);
+    this._unwatches.push(
+      watch(refReactiveData, (newVal, oldVal) => {
+        this.dispose({ skipDestroyOwnWatcher: true });
+        // create config
+        this._reactiveConfig = this.createConfig(newVal);
+        // create children
+        this.createChildren(newVal);
+      })
+    );
 
-      this.dispose({ skipDestroyOwnWatcher: true });
-      // traverse children
-      const obj = newVal;
-      if (!isPrimitiveType(obj)) {
-        if (isArray(obj)) {
-          obj.forEach((v, i) => {
-            const child = new ResponsiveNode(
-              i.toString(),
-              i.toString(),
-              toRef(obj, i)
-            );
-            this.appendChild(child);
-          });
-        } else {
-          Object.entries(obj).forEach(([k, v]) => {
-            const child = new ResponsiveNode(k, k, toRef(obj, k));
-            this.appendChild(child);
-          });
-        }
+    // create config
+    this._reactiveConfig = this.createConfig(refReactiveData.value);
+    // create children
+    this.createChildren(refReactiveData.value);
+  }
+
+  private createConfig(reactiveData: any) {
+    const fieldMetadata = !this._parent
+      ? undefined
+      : getFieldMetadata(this._parent.refReactiveData.value, this.key);
+    let baseFormItem: IBaseFormItem;
+    if (
+      fieldMetadata === undefined ||
+      (fieldMetadata.groupConfig === undefined &&
+        fieldMetadata.editConfig === undefined)
+    ) {
+      if (
+        isArray(reactiveData) ||
+        getType(reactiveData) === VariableType.bObject
+      ) {
+        const item = new FormItemGroup(this.key, this.key);
+        item.children = [];
+        baseFormItem = reactive(item);
+      } else {
+        baseFormItem = reactive(new FormItem(this.key, this.key));
       }
-    });
+    } else if (fieldMetadata.groupConfig !== undefined) {
+      let newFormItem: (() => void) | undefined;
+      let deleteFormItem: ((key: number | string) => void) | undefined;
+      baseFormItem = reactive({
+        key: this.key,
+        name: fieldMetadata.groupConfig.name,
+        newFormItem,
+        deleteFormItem,
+        children: [],
+        condition: fieldMetadata.groupConfig.condition
+      });
+    } else {
+      baseFormItem = reactive({
+        key: this.key,
+        ...fieldMetadata.editConfig!
+      });
+    }
+    return baseFormItem;
+  }
 
-    this._unwatches.push(unwatch);
+  private createChildren(reactiveData: any) {
+    const fieldMetadata = !this._parent
+      ? undefined
+      : getFieldMetadata(this._parent.refReactiveData.value, this.key);
+    if (
+      fieldMetadata === undefined ||
+      (fieldMetadata.groupConfig === undefined &&
+        fieldMetadata.editConfig === undefined)
+    ) {
+      this.innerCreateChildren(reactiveData);
+    } else if (fieldMetadata.groupConfig !== undefined) {
+      if (isPrimitiveType(reactiveData)) {
+        throw new Error(
+          `create children failed: it can't attach fieldGroup on primitive type field`
+        );
+      } else {
+        this.innerCreateChildren(reactiveData);
+      }
+    }
+  }
 
-    // traverse children
-    const obj = reactiveData.value;
-    if (!isPrimitiveType(obj)) {
-      if (isArray(obj)) {
-        obj.forEach((v, i) => {
+  private innerCreateChildren(reactiveData: any) {
+    if (!isPrimitiveType(reactiveData)) {
+      if (isArray(reactiveData)) {
+        reactiveData.forEach((v, i) => {
           const child = new ResponsiveNode(
             i.toString(),
-            i.toString(),
-            toRef(obj, i)
+            toRef(reactiveData, i)
           );
           this.appendChild(child);
         });
       } else {
-        Object.entries(obj).forEach(([k, v]) => {
-          const child = new ResponsiveNode(k, k, toRef(obj, k));
+        Object.entries(reactiveData).forEach(([k, v]) => {
+          const child = new ResponsiveNode(k, toRef(reactiveData, k));
           this.appendChild(child);
         });
       }
@@ -102,6 +146,7 @@ export class ResponsiveNode {
     this._children.forEach((child) => child.dispose());
 
     this.clearChildren();
+    this._reactiveConfig = reactive({ key: this.key, name: this.key });
   }
 
   private setParent(parentNode?: ResponsiveNode) {
@@ -113,21 +158,6 @@ export class ResponsiveNode {
       // finally confirm new parent
       this._parent = parentNode;
     }
-
-    // // get metadata
-    // const fieldMetadata = getFieldMetadata(
-    //   parentNode._reactiveData.value,
-    //   this.key
-    // );
-    // if (!!fieldMetadata) {
-    //   if (fieldMetadata.autoSyncConfig === true) {
-    //     // create auto sync config watcher
-    //     const unwatch = watch(this._reactiveData, (newVal) => {
-    //       // sync config
-    //       this.syncConfig(newVal);
-    //     });
-    //   }
-    // }
   }
 
   private appendChild(childNode: ResponsiveNode) {
@@ -162,7 +192,7 @@ export class ResponsiveNode {
 
   private syncConfig(newVal: any) {
     if (isPrimitiveType(newVal)) {
-      // 如果原来节点的配置是group的时候，要改成表单项的配置
+      // 如果原来节点的配置是group的时候，要改成表单项的配置 TODO: ResponsiveNode测试一下这个情况
       if (isFormItemGroup(this._reactiveConfig)) {
         delete this._reactiveConfig.children;
         delete this._reactiveConfig.newFormItem;
@@ -181,7 +211,7 @@ export class ResponsiveNode {
       if (isArray(newVal)) {
         newVal.forEach((val, idx) => {
           const strIdx = idx.toString();
-          const childNode = new ResponsiveNode(strIdx, strIdx, ref(val));
+          const childNode = new ResponsiveNode(strIdx, ref(val));
           childNode.setParent(this);
         });
       } else {
