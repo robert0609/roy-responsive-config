@@ -26,9 +26,16 @@ import {
   VariableType
 } from 'roy-type-assert';
 import { FormItem, FormItemGroup } from './form';
+import mitt, { Handler } from 'mitt';
 
 const rootKey = '$root';
 const parentKey = Symbol('parent');
+
+type ResponsiveEvents = {
+  ['condition']: { watchFieldPath: string[]; newVal: any };
+};
+
+const emitter = mitt<ResponsiveEvents>();
 
 export class ResponsiveNode {
   private _reactiveConfig: UnwrapNestedRefs<IBaseFormItem>;
