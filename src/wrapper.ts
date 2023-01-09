@@ -34,6 +34,10 @@ const emitter = mitt<ResponsiveEvents>();
 export class ResponsiveNode {
   private _reactiveConfig?: UnwrapNestedRefs<IBaseFormItem>;
 
+  get reactiveConfig() {
+    return this._reactiveConfig;
+  }
+
   private [parentKey]?: ResponsiveNode;
   private _children: ResponsiveNode[] = [];
 
