@@ -107,8 +107,8 @@ export class FormItemProperties implements IFormItemProperties {
     options?: FormOption[]
   ) {
     this.defaultValue = defaultValue;
-    this.placeholder = placeholder;
-    this.options = options;
+    this.placeholder = placeholder || '';
+    this.options = options || [];
   }
 }
 
@@ -203,7 +203,7 @@ export class FormItem implements IFormItem {
     this.required = required;
     this.readonly = readonly;
     this.properties = properties;
-    this.condition = condition;
+    this.condition = condition || [];
   }
 }
 
@@ -224,6 +224,6 @@ export class FormItemGroup implements IFormItemGroup {
   constructor(key = '', name = '', condition?: FormCondition[]) {
     this.key = key;
     this.name = name;
-    this.condition = condition;
+    this.condition = condition || [];
   }
 }

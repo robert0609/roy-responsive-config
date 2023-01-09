@@ -1,5 +1,11 @@
 import { reactive, ref, toRef } from 'vue';
-import { fieldEdit, fieldGroup, ResponsiveNode } from '..';
+import {
+  fieldEdit,
+  fieldGroup,
+  ResponsiveNode,
+  FormItem,
+  FormItemGroup
+} from '..';
 
 class RoyItem {
   @fieldEdit({
@@ -29,6 +35,12 @@ class RoyItem {
         { value: 'switch', name: '开关' }
       ]
     }
+    // condition: [
+    //   {
+    //     field: '../d',
+    //     value: ['yes', 'no']
+    //   }
+    // ],
   })
   // @fieldWatch<[number]>(['value'], function (newVal, oldVal, update) {
   //   console.log(
@@ -79,12 +91,12 @@ export class RoyData {
   // @syncConfig
   @fieldGroup({
     name: '属性F',
-    condition: [
-      {
-        field: './d',
-        value: ['yes', 'no']
-      }
-    ],
+    // condition: [
+    //   {
+    //     field: './d',
+    //     value: ['yes', 'no']
+    //   }
+    // ],
     createNewFormItem() {
       return new RoyItem(-1, '');
     }
@@ -94,6 +106,8 @@ export class RoyData {
   g: RoyItem[] = [{ value: 9, name: 'ert' }];
 
   h: RoyItem = new RoyItem(1800, '56hongyu');
+
+  m: FormItem = new FormItem();
 
   constructor() {}
 }
