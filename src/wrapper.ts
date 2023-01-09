@@ -262,7 +262,7 @@ export class ResponsiveNode {
     }
   }
 
-  private dispose({ skipDestroyOwnWatcher = false } = {}) {
+  dispose({ skipDestroyOwnWatcher = false } = {}) {
     if (!skipDestroyOwnWatcher) {
       this._unwatches.forEach((fn) => fn());
       this._unwatches = [];
