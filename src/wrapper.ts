@@ -8,7 +8,7 @@ import {
   WatchStopHandle
 } from 'vue';
 import { getFieldMetadata, IFieldMetadata } from './decorator';
-import { IBaseFormItem } from './type';
+import { IBaseFormItem, IFormItemGroup } from './type';
 import {
   getType,
   isArray,
@@ -48,7 +48,8 @@ export class ResponsiveNode {
   constructor(
     public readonly key: string,
     private readonly refReactiveData: Ref<UnwrapNestedRefs<any>>,
-    private readonly metadata?: IFieldMetadata
+    private readonly metadata?: IFieldMetadata,
+    readonly parentReactiveConfig?: UnwrapNestedRefs<IFormItemGroup>
   ) {
     // create watcher
     this._unwatches.push(
@@ -56,6 +57,18 @@ export class ResponsiveNode {
         this.dispose({ skipDestroyOwnWatcher: true });
         // create config
         this._reactiveConfig = this.createConfig(newVal);
+        if (!!parentReactiveConfig) {
+          if (parentReactiveConfig.children === undefined) {
+            throw new Error(
+              `update config failed: parent reactive config's children is undefined`
+            );
+          }
+          const index = this[parentKey]!._children.findIndex(
+            (c) => c.key === key
+          );
+          //@ts-ignore
+          parentReactiveConfig.children[index] = this._reactiveConfig;
+        }
         // create children
         this.createChildren(newVal);
 
@@ -65,8 +78,18 @@ export class ResponsiveNode {
 
     // create config
     this._reactiveConfig = this.createConfig(refReactiveData.value);
+    if (!!parentReactiveConfig) {
+      if (parentReactiveConfig.children === undefined) {
+        throw new Error(
+          `add config failed: parent reactive config's children is undefined`
+        );
+      }
+      //@ts-ignore
+      parentReactiveConfig.children.push(this._reactiveConfig);
+    }
     // create children
     this.createChildren(refReactiveData.value);
+
     // create condition watcher
     this.createConditionListener();
   }
@@ -218,7 +241,8 @@ export class ResponsiveNode {
           const child = new ResponsiveNode(
             i.toString(),
             toRef(reactiveData, i),
-            getFieldMetadata(reactiveData, i.toString())
+            getFieldMetadata(reactiveData, i.toString()),
+            this._reactiveConfig
           );
           this.appendChild(child);
         });
@@ -227,7 +251,8 @@ export class ResponsiveNode {
           const child = new ResponsiveNode(
             k,
             toRef(reactiveData, k),
-            getFieldMetadata(reactiveData, k)
+            getFieldMetadata(reactiveData, k),
+            this._reactiveConfig
           );
           this.appendChild(child);
         });
