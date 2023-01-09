@@ -138,8 +138,8 @@ async function wait(n: number) {
   reactiveTestData.h.name = 'hname';
   await wait(10);
   //@ts-ignore
-  reactiveTestData.d = { a: 100 };
-  await wait(10);
+  // reactiveTestData.d = { a: 100 };
+  // await wait(10);
   reactiveTestData.e = [...reactiveTestData.e, 5];
   await wait(10);
 })();

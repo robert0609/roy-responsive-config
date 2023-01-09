@@ -123,8 +123,10 @@ export class ResponsiveNode {
         newFormItem = () => {
           if (isArray(reactiveData)) {
             const arr = toRaw(reactiveData);
-            arr.push(fieldMetadata.groupConfig!.createNewFormItem!());
-            this.refReactiveData.value = reactive(arr);
+            this.refReactiveData.value = reactive([
+              ...arr,
+              fieldMetadata.groupConfig!.createNewFormItem!()
+            ]);
           } else if (getType(reactiveData) === VariableType.bObject) {
             const [k, v] = fieldMetadata.groupConfig!.createNewFormItem!();
             this.refReactiveData.value = reactive(
@@ -142,7 +144,7 @@ export class ResponsiveNode {
           if (isArray(reactiveData)) {
             const arr = toRaw(reactiveData);
             arr.splice(key as number, 1);
-            this.refReactiveData.value = reactive(arr);
+            this.refReactiveData.value = reactive([...arr]);
           } else if (getType(reactiveData) === VariableType.bObject) {
             const obj = toRaw(reactiveData);
             delete obj[key];
