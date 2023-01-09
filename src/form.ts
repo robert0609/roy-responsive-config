@@ -97,7 +97,10 @@ export class FormItemProperties implements IFormItemProperties {
 
   @fieldGroup({
     name: '表单选项',
-    condition: [{ field: '../type', value: ['select', 'radio', 'checkbox'] }]
+    condition: [{ field: '../type', value: ['select', 'radio', 'checkbox'] }],
+    createNewFormItem() {
+      return new FormOption();
+    }
   })
   readonly options?: FormOption[];
 
@@ -184,7 +187,10 @@ export class FormItem implements IFormItem {
   readonly properties: FormItemProperties;
 
   @fieldGroup({
-    name: '显示条件'
+    name: '显示条件',
+    createNewFormItem() {
+      return new FormCondition();
+    }
   })
   readonly condition?: FormCondition[];
 

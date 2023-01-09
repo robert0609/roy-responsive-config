@@ -192,6 +192,8 @@ export class ResponsiveNode {
         if (lastReactiveData !== undefined) {
           this.refReactiveData.value = lastReactiveData;
           lastReactiveData = undefined;
+        } else {
+          // TODO: 初始化的时候，如果数据没有默认值，那么在根据condition切换状态的时候，会不知道切换成什么类型的数据
         }
       } else {
         lastReactiveData = this.refReactiveData.value;
