@@ -39,8 +39,30 @@ export class FormOption {
 }
 
 export class FormCondition {
+  @fieldEdit({
+    name: '条件字段名',
+    type: 'text',
+    required: true,
+    readonly: false,
+    properties: {
+      defaultValue: '',
+      placeholder: '请输入条件字段名'
+    }
+  })
   readonly field: string;
+
+  @fieldEdit({
+    name: '条件判断值',
+    type: 'text',
+    required: true,
+    readonly: false,
+    properties: {
+      defaultValue: '',
+      placeholder: '请输入条件判断值，如果有多个值则用逗号分隔'
+    }
+  })
   readonly value: FormItemValueType;
+
   constructor(field = '', value: FormItemValueType = '') {
     this.field = field;
     this.value = value;
@@ -48,9 +70,36 @@ export class FormCondition {
 }
 
 export class FormItemProperties implements IFormItemProperties {
-  defaultValue: FormItemValueType;
-  placeholder?: string;
-  options?: FormOption[];
+  @fieldEdit({
+    name: '默认值',
+    type: 'text',
+    required: false,
+    readonly: false,
+    properties: {
+      defaultValue: '',
+      placeholder: '请输入默认值，如果有多个值则用逗号分隔' // TODO: 后续优化这里。一个field支持附加多个fieldEdit，根据别的条件来展示哪种edit组件
+    }
+  })
+  readonly defaultValue: FormItemValueType;
+
+  @fieldEdit({
+    name: '占位文字',
+    type: 'text',
+    required: false,
+    readonly: false,
+    properties: {
+      defaultValue: '',
+      placeholder: '请输入占位文字'
+    },
+    condition: [{ field: '../type', value: ['text', 'select'] }]
+  })
+  readonly placeholder?: string;
+
+  @fieldGroup({
+    name: '表单选项',
+    condition: [{ field: '../type', value: ['select', 'radio', 'checkbox'] }]
+  })
+  readonly options?: FormOption[];
 
   constructor(
     defaultValue: FormItemValueType = '',
@@ -110,7 +159,7 @@ export class FormItem implements IFormItem {
   @fieldEdit({
     name: '是否必填',
     type: 'switch',
-    required: true,
+    required: false,
     readonly: false,
     properties: {
       defaultValue: false
@@ -121,7 +170,7 @@ export class FormItem implements IFormItem {
   @fieldEdit({
     name: '是否只读',
     type: 'switch',
-    required: true,
+    required: false,
     readonly: false,
     properties: {
       defaultValue: false
@@ -163,6 +212,9 @@ export class FormItemGroup implements IFormItemGroup {
 
   readonly name: string;
 
+  @fieldGroup({
+    name: '显示条件'
+  })
   readonly condition?: FormCondition[];
 
   children?: IFormItemGroup[];

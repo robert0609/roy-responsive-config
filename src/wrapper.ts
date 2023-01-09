@@ -320,16 +320,26 @@ export class ResponsiveNode {
   private checkConditions(conditions: FormCondition[]) {
     let result = true;
     for (const condition of conditions) {
-      const val = this.getDataByPath(condition.field);
-      const targetVal = condition.value;
-      if (isArray(targetVal)) {
-        if (isArray(val)) {
-          result = val.sort().toString() === targetVal.sort().toString();
-        } else {
-          result = false;
-        }
+      let val = this.getDataByPath(condition.field);
+      if (!val) {
+        result = false;
       } else {
-        result = targetVal === val;
+        let targetVal = condition.value;
+        if (isArray(targetVal)) {
+          targetVal = targetVal.map((s) => s.toString());
+          if (isArray(val)) {
+            val = val.map((s: any) => s.toString());
+            result = val.sort().toString() === targetVal.sort().toString();
+          } else {
+            result = targetVal.includes(val.toString());
+          }
+        } else {
+          if (isArray(val)) {
+            result = false;
+          } else {
+            result = targetVal.toString() === val.toString();
+          }
+        }
       }
       if (!result) {
         break;
