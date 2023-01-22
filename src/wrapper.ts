@@ -32,7 +32,7 @@ type ResponsiveEvents = {
 const emitter = mitt<ResponsiveEvents>();
 
 export class ResponsiveNode {
-  private _reactiveConfig?: UnwrapNestedRefs<IBaseFormItem>;
+  private _reactiveConfig?: UnwrapNestedRefs<IBaseFormItem>; // 为了方便配置页的表单项之间的联动，这里做成了响应式
 
   get reactiveConfig() {
     return this._reactiveConfig;
