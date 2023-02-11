@@ -117,7 +117,8 @@ export class ResponsiveNode {
         item.children = [];
         baseFormItem = reactive(item);
       } else {
-        baseFormItem = reactive(new FormItem(this.key, this.key));
+        // 没有附加fieldEdit的字段，展示成只读的
+        baseFormItem = reactive(new FormItem(this.key, this.key, 'text', false, true));
       }
     } else if (fieldMetadata.groupConfig !== undefined) {
       let newFormItem: (() => void) | undefined;
