@@ -34,21 +34,14 @@ class RoyItem {
         { value: 'checkbox', name: '多选框' },
         { value: 'switch', name: '开关' }
       ]
-    }
-    // condition: [
-    //   {
-    //     field: '../d',
-    //     value: ['yes', 'no']
-    //   }
-    // ],
+    },
+    condition: [
+      {
+        field: 'value',
+        value: ['1']
+      }
+    ]
   })
-  // @fieldWatch<[number]>(['value'], function (newVal, oldVal, update) {
-  //   console.log(
-  //     'triggered watch: ',
-  //     JSON.stringify(newVal),
-  //     JSON.stringify(oldVal)
-  //   );
-  // })
   name: string;
 
   constructor(value: number, name: string) {
@@ -66,16 +59,16 @@ export class RoyData {
 
   d?: string;
 
-  // @fieldEdit({
-  //   name: 'id列表',
-  //   type: 'text',
-  //   required: false,
-  //   readonly: false,
-  //   properties: {
-  //     defaultValue: false,
-  //     placeholder: '请输入id列表'
-  //   }
-  // })
+  @fieldEdit({
+    name: 'id列表',
+    type: 'text',
+    required: false,
+    readonly: false,
+    properties: {
+      defaultValue: '',
+      placeholder: '请输入id列表'
+    }
+  })
   e: number[] = [3, 6];
 
   // @fieldWatch<[number]>(['f[0].value'], function (newVal, oldVal, update) {
@@ -130,27 +123,27 @@ async function wait(n: number) {
 
   await wait(100);
 
-  // reactiveTestData.a = false;
-  // await wait(10);
-  // reactiveTestData.b = 'world';
-  // await wait(10);
-  // reactiveTestData.c = 100;
-  // await wait(10);
-  // reactiveTestData.d = 'no';
-  // await wait(10);
-  // reactiveTestData.e[1] = 9;
-  // await wait(10);
+  reactiveTestData.a = false;
+  await wait(10);
+  reactiveTestData.b = 'world';
+  await wait(10);
+  reactiveTestData.c = 100;
+  await wait(10);
+  reactiveTestData.d = 'no';
+  await wait(10);
+  reactiveTestData.e[1] = 9;
+  await wait(10);
 
-  // reactiveTestData.e = [1, 2, 3, 4];
-  // await wait(10);
-  // reactiveTestData.f[1].value = 20;
-  // await wait(10);
-  // reactiveTestData.f[0] = { value: 100, name: '' };
-  // await wait(10);
-  // reactiveTestData.g[0].name = '567';
-  // await wait(10);
-  // reactiveTestData.h.name = 'hname';
-  // await wait(10);
+  reactiveTestData.e = [1, 2, 3, 4];
+  await wait(10);
+  reactiveTestData.f[1].value = 20;
+  await wait(10);
+  reactiveTestData.f[0] = { value: 100, name: '' };
+  await wait(10);
+  reactiveTestData.g[0].name = '567';
+  await wait(10);
+  reactiveTestData.h.name = 'hname';
+  await wait(10);
   // //@ts-ignore
   // // reactiveTestData.d = { a: 100 };
   // // await wait(10);

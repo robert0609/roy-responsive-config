@@ -42,6 +42,7 @@ export class ResponsiveNode {
   private _children: ResponsiveNode[] = [];
 
   private _unwatches: WatchStopHandle[] = [];
+  private _disposeConditionListener?: () => void;
 
   private _onCondition?: Handler<ResponsiveEvents['condition']>;
 
@@ -95,7 +96,8 @@ export class ResponsiveNode {
     this.createChildren(refReactiveData.value);
 
     // create condition watcher
-    this.createConditionListener();
+    const re = this.createConditionListener();
+    this._disposeConditionListener = re?.disposeConditionListener;
   }
 
   private createConfig(reactiveData: any) {
@@ -118,7 +120,9 @@ export class ResponsiveNode {
         baseFormItem = reactive(item);
       } else {
         // 没有附加fieldEdit的字段，展示成只读的
-        baseFormItem = reactive(new FormItem(this.key, this.key, 'text', false, true));
+        baseFormItem = reactive(
+          new FormItem(this.key, this.key, 'text', false, true)
+        );
       }
     } else if (fieldMetadata.groupConfig !== undefined) {
       let newFormItem: (() => void) | undefined;
@@ -198,6 +202,7 @@ export class ResponsiveNode {
         }
       } else {
         lastReactiveData = this.refReactiveData.value;
+        // 如果未满足condition条件，这里清空原始数据的值，那么对应的配置结构也被清空
         this.refReactiveData.value = undefined;
       }
     };
@@ -219,6 +224,14 @@ export class ResponsiveNode {
       checkByConditions();
     }, 0);
     emitter.on('condition', this._onCondition);
+
+    return {
+      disposeConditionListener: () => {
+        emitter.off('condition', this._onCondition);
+        this._onCondition = undefined;
+        this.refReactiveData.value = lastReactiveData;
+      }
+    };
   }
 
   private createChildren(reactiveData: any) {
@@ -273,8 +286,9 @@ export class ResponsiveNode {
     if (!skipDestroyOwnWatcher) {
       this._unwatches.forEach((fn) => fn());
       this._unwatches = [];
-      if (!!this._onCondition) {
-        emitter.off('condition', this._onCondition);
+      if (!!this._disposeConditionListener) {
+        this._disposeConditionListener();
+        this._disposeConditionListener = undefined;
       }
     }
     this._children.forEach((child) => child.dispose());
