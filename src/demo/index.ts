@@ -30,6 +30,7 @@ class RoyItem {
       options: [
         { value: 'text', name: '输入框' },
         { value: 'select', name: '下拉框' },
+        { value: 'cascader', name: '级联选择框' },
         { value: 'radio', name: '单选框' },
         { value: 'checkbox', name: '多选框' },
         { value: 'switch', name: '开关' }

@@ -1,4 +1,10 @@
-export type FormItemType = 'text' | 'select' | 'radio' | 'checkbox' | 'switch';
+export type FormItemType =
+  | 'text'
+  | 'select'
+  | 'radio'
+  | 'checkbox'
+  | 'switch'
+  | 'cascader';
 export type FormItemValueType = boolean | string | string[];
 
 export interface IFormItemProperties {

@@ -32,6 +32,14 @@ export class FormOption {
   })
   readonly name: string;
 
+  @fieldGroup({
+    name: '子级选项',
+    createNewFormItem() {
+      return new FormOption();
+    }
+  })
+  readonly children: FormOption[] = [];
+
   constructor(value = '', name = '') {
     this.value = value;
     this.name = name;
@@ -91,13 +99,15 @@ export class FormItemProperties implements IFormItemProperties {
       defaultValue: '',
       placeholder: '请输入占位文字'
     },
-    condition: [{ field: '../type', value: ['text', 'select'] }]
+    condition: [{ field: '../type', value: ['text', 'select', 'cascader'] }]
   })
   readonly placeholder?: string;
 
   @fieldGroup({
     name: '表单选项',
-    condition: [{ field: '../type', value: ['select', 'radio', 'checkbox'] }],
+    condition: [
+      { field: '../type', value: ['select', 'radio', 'checkbox', 'cascader'] }
+    ],
     createNewFormItem() {
       return new FormOption();
     }
@@ -151,6 +161,7 @@ export class FormItem implements IFormItem {
       options: [
         { value: 'text', name: '输入框' },
         { value: 'select', name: '下拉框' },
+        { value: 'cascader', name: '级联选择框' },
         { value: 'radio', name: '单选框' },
         { value: 'checkbox', name: '多选框' },
         { value: 'switch', name: '开关' }
