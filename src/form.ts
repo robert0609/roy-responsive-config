@@ -3,11 +3,12 @@ import {
   IFormItem,
   IFormItemGroup,
   IFormItemProperties,
-  FormItemValueType
+  FormItemValueType,
+  IFormOption
 } from './type';
 import { fieldEdit, fieldGroup } from './decorator';
 
-export class FormOption {
+export class FormOption implements IFormOption {
   @fieldEdit({
     name: '选项值',
     type: 'text',
@@ -38,7 +39,7 @@ export class FormOption {
       return new FormOption();
     }
   })
-  readonly children: FormOption[] = [];
+  readonly children?: FormOption[] = [];
 
   constructor(value = '', name = '') {
     this.value = value;

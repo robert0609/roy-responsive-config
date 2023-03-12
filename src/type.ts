@@ -7,13 +7,16 @@ export type FormItemType =
   | 'cascader';
 export type FormItemValueType = boolean | string | string[];
 
+export interface IFormOption {
+  value: string;
+  name: string;
+  children?: IFormOption[];
+}
+
 export interface IFormItemProperties {
   defaultValue: FormItemValueType;
   placeholder?: string;
-  options?: {
-    value: string;
-    name: string;
-  }[];
+  options?: IFormOption[];
 }
 
 export interface IBaseFormItem {
