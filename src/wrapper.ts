@@ -199,11 +199,14 @@ export class ResponsiveNode {
           lastReactiveData = undefined;
         } else {
           // TODO: 初始化的时候，如果数据没有默认值，那么在根据condition切换状态的时候，会不知道切换成什么类型的数据
+          // console.warn('初始化的时候，数据没有默认值');
         }
       } else {
-        lastReactiveData = this.refReactiveData.value;
-        // 如果未满足condition条件，这里清空原始数据的值，那么对应的配置结构也被清空
-        this.refReactiveData.value = undefined;
+        if (lastReactiveData === undefined) {
+          lastReactiveData = this.refReactiveData.value;
+          // 如果未满足condition条件，这里清空原始数据的值，那么对应的配置结构也被清空
+          this.refReactiveData.value = undefined;
+        }
       }
     };
 
@@ -229,7 +232,9 @@ export class ResponsiveNode {
       disposeConditionListener: () => {
         emitter.off('condition', this._onCondition);
         this._onCondition = undefined;
-        this.refReactiveData.value = lastReactiveData;
+        if (lastReactiveData !== undefined) {
+          this.refReactiveData.value = lastReactiveData;
+        }
       }
     };
   }

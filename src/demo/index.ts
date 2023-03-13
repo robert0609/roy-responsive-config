@@ -4,7 +4,8 @@ import {
   fieldGroup,
   ResponsiveNode,
   FormItem,
-  FormItemGroup
+  FormItemGroup,
+  IFormItemGroup
 } from '..';
 
 class RoyItem {
@@ -35,13 +36,13 @@ class RoyItem {
         { value: 'checkbox', name: '多选框' },
         { value: 'switch', name: '开关' }
       ]
-    },
-    condition: [
-      {
-        field: 'value',
-        value: ['1']
-      }
-    ]
+    }
+    // condition: [
+    //   {
+    //     field: 'value',
+    //     value: ['1']
+    //   }
+    // ]
   })
   name: string;
 
@@ -103,6 +104,14 @@ export class RoyData {
 
   m: FormItem = new FormItem();
 
+  @fieldGroup({
+    name: '表单项组',
+    createNewFormItem() {
+      return new FormItem();
+    }
+  })
+  items: FormItem[] = [];
+
   constructor() {}
 }
 
@@ -123,28 +132,49 @@ async function wait(n: number) {
   window.reactiveTestData = reactiveTestData;
 
   await wait(100);
+  (resData.reactiveConfig as IFormItemGroup).children![9].newFormItem!();
+  console.log(
+    'push item into items: ',
+    reactiveTestData.items,
+    (resData.reactiveConfig as IFormItemGroup).children![9]
+  );
+  // await wait(100);
+  // (resData.reactiveConfig as IFormItemGroup).children![9].newFormItem!();
+  // console.log('push item into items: ', reactiveTestData.items, (resData.reactiveConfig as IFormItemGroup).children![9]);
+  await wait(100);
+  // @ts-ignore
+  reactiveTestData.items[0].type = 'select';
+  // @ts-ignore
+  reactiveTestData.items[0].type = 'radio';
+  // @ts-ignore
+  reactiveTestData.items[0].type = 'cascader';
+  // @ts-ignore
+  reactiveTestData.items[0].type = 'checkbox';
+  // @ts-ignore
+  reactiveTestData.items[0].type = 'switch';
+  // console.log('items: ', reactiveTestData.items, (resData.reactiveConfig as IFormItemGroup).children![9]);
 
-  reactiveTestData.a = false;
-  await wait(10);
-  reactiveTestData.b = 'world';
-  await wait(10);
-  reactiveTestData.c = 100;
-  await wait(10);
-  reactiveTestData.d = 'no';
-  await wait(10);
-  reactiveTestData.e[1] = 9;
-  await wait(10);
+  // reactiveTestData.a = false;
+  // await wait(10);
+  // reactiveTestData.b = 'world';
+  // await wait(10);
+  // reactiveTestData.c = 100;
+  // await wait(10);
+  // reactiveTestData.d = 'no';
+  // await wait(10);
+  // reactiveTestData.e[1] = 9;
+  // await wait(10);
 
-  reactiveTestData.e = [1, 2, 3, 4];
-  await wait(10);
-  reactiveTestData.f[1].value = 20;
-  await wait(10);
-  reactiveTestData.f[0] = { value: 100, name: '' };
-  await wait(10);
-  reactiveTestData.g[0].name = '567';
-  await wait(10);
-  reactiveTestData.h.name = 'hname';
-  await wait(10);
+  // reactiveTestData.e = [1, 2, 3, 4];
+  // await wait(10);
+  // reactiveTestData.f[1].value = 20;
+  // await wait(10);
+  // reactiveTestData.f[0] = { value: 100, name: '' };
+  // await wait(10);
+  // reactiveTestData.g[0].name = '567';
+  // await wait(10);
+  // reactiveTestData.h.name = 'hname';
+  // await wait(10);
   // //@ts-ignore
   // // reactiveTestData.d = { a: 100 };
   // // await wait(10);
