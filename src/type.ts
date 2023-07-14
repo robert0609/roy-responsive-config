@@ -3,6 +3,7 @@ export type FormItemType =
   | 'select'
   | 'radio'
   | 'checkbox'
+  | 'mapCheckbox'
   | 'switch'
   | 'cascader';
 export type FormItemValueType = boolean | string | string[];
