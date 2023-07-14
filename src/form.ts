@@ -107,7 +107,7 @@ export class FormItemProperties implements IFormItemProperties {
   @fieldGroup({
     name: '表单选项',
     condition: [
-      { field: '../type', value: ['select', 'radio', 'checkbox', 'cascader'] }
+      { field: '../type', value: ['select', 'radio', 'checkbox', 'mapCheckbox', 'cascader'] }
     ],
     createNewFormItem() {
       return new FormOption();
@@ -165,6 +165,7 @@ export class FormItem implements IFormItem {
         { value: 'cascader', name: '级联选择框' },
         { value: 'radio', name: '单选框' },
         { value: 'checkbox', name: '多选框' },
+        { value: 'mapCheckbox', name: '多选框(字典值)' },
         { value: 'switch', name: '开关' }
       ]
     }
