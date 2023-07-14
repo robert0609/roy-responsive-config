@@ -107,7 +107,10 @@ export class FormItemProperties implements IFormItemProperties {
   @fieldGroup({
     name: '表单选项',
     condition: [
-      { field: '../type', value: ['select', 'radio', 'checkbox', 'mapCheckbox', 'cascader'] }
+      {
+        field: '../type',
+        value: ['select', 'radio', 'checkbox', 'mapCheckbox', 'cascader']
+      }
     ],
     createNewFormItem() {
       return new FormOption();
