@@ -6,7 +6,11 @@ export type FormItemType =
   | 'mapCheckbox'
   | 'switch'
   | 'cascader';
-export type FormItemValueType = boolean | string | string[];
+export type FormItemValueType =
+  | boolean
+  | string
+  | string[]
+  | Record<string, number | string | boolean>;
 
 export interface IFormOption {
   value: string;
