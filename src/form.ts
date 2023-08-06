@@ -164,12 +164,15 @@ export class FormItem implements IFormItem {
       placeholder: '请选择表单项类型',
       options: [
         { value: 'text', name: '输入框' },
+        { value: 'textarea', name: '输入框(多行)' },
         { value: 'select', name: '下拉框' },
         { value: 'cascader', name: '级联选择框' },
         { value: 'radio', name: '单选框' },
         { value: 'checkbox', name: '多选框' },
         { value: 'mapCheckbox', name: '多选框(字典值)' },
-        { value: 'switch', name: '开关' }
+        { value: 'switch', name: '开关' },
+        { value: 'uploader', name: '上传组件' },
+        { value: 'colorPicker', name: '调色盘' }
       ]
     }
   })

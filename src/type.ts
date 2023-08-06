@@ -5,7 +5,10 @@ export type FormItemType =
   | 'checkbox'
   | 'mapCheckbox'
   | 'switch'
-  | 'cascader';
+  | 'cascader'
+  | 'uploader'
+  | 'colorPicker'
+  | 'textarea';
 export type FormItemValueType =
   | boolean
   | string
