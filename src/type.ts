@@ -27,10 +27,15 @@ export interface IFormItemProperties {
   options?: IFormOption[];
 }
 
+export interface IFormCondition {
+  field: string;
+  value: FormItemValueType;
+}
+
 export interface IBaseFormItem {
   key: string; // 内部表单项对应的数据字段名
   name: string; // 页面上展示的表单名称
-  condition?: { field: string; value: FormItemValueType }[]; // 表单项展示的条件
+  condition?: IFormCondition[]; // 表单项展示的条件
 }
 
 export interface IFormItem extends IBaseFormItem {

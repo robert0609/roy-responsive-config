@@ -4,7 +4,8 @@ import {
   IFormItemGroup,
   IFormItemProperties,
   FormItemValueType,
-  IFormOption
+  IFormOption,
+  IFormCondition
 } from './type';
 import { fieldEdit, fieldGroup } from './decorator';
 
@@ -47,7 +48,7 @@ export class FormOption implements IFormOption {
   }
 }
 
-export class FormCondition {
+export class FormCondition implements IFormCondition {
   @fieldEdit({
     name: '条件字段名',
     type: 'text',
