@@ -1,0 +1,48 @@
+---
+description: roy-responsive-config 项目目录与模块架构约定
+alwaysApply: true
+---
+
+# 项目架构规则
+
+## 目录结构
+
+```
+roy-responsive-config/
+├── src/
+│   ├── index.ts          # 入口，仅做 re-export
+│   ├── type.ts           # 类型与类型守卫
+│   ├── decorator.ts      # 属性装饰器（@fieldEdit / @fieldGroup）
+│   ├── form.ts           # 表单模型类（FormItem、FormItemGroup 等）
+│   ├── wrapper.ts        # ResponsiveNode 响应式配置树
+│   └── demo/             # 示例代码，不对外导出
+├── dist/                 # 构建产物（勿直接编辑）
+├── vite.config.ts
+├── tsconfig.json
+└── package.json
+```
+
+## 模块职责与依赖方向
+
+| 模块 | 职责 | 可依赖 |
+|------|------|--------|
+| **type** | 定义 `FormItemType`、`IFormItem`、`IFormItemGroup` 等接口及 `isFormItem` 等类型守卫 | 无（基础层） |
+| **decorator** | 提供 `@fieldEdit`、`@fieldGroup`，基于 `reflect-metadata` 存储元数据 | type |
+| **form** | 实现 `FormItem`、`FormItemGroup`、`FormOption`、`FormCondition` 等类，使用 decorator | type, decorator |
+| **wrapper** | `ResponsiveNode` 将「普通数据 + 装饰器元数据」转为 Vue 响应式配置树 | type, decorator, form |
+
+- **禁止**：type 依赖 form/wrapper；decorator 依赖 form/wrapper；form 依赖 wrapper。
+- **index.ts** 只做 `export * from './...'`，不写业务逻辑。
+
+## 新增/修改约定
+
+- **新类型或接口** → 放在 `type.ts`。
+- **新装饰器或元数据 key** → 放在 `decorator.ts`，继续用 `Reflect.defineMetadata`/`getMetadata`。
+- **新表单模型类** → 放在 `form.ts`，实现 `type.ts` 中对应接口并用现有装饰器。
+- **响应式树或条件联动逻辑** → 放在 `wrapper.ts`，通过 `getFieldMetadata` 与 form 协作。
+- **示例用法** → 放在 `src/demo/`，不从 `index.ts` 导出。
+
+## 构建与入口
+
+- 库入口为 `src/index.ts`，由 Vite 以 lib 模式打包为 ESM/UMD。
+- 对外 API 以 `index.ts` 的 export 为准；未在 index 导出的模块视为内部实现。

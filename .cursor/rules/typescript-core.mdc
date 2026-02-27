@@ -1,0 +1,38 @@
+---
+description: TypeScript 核心开发语言约定（对齐 tsconfig / ESLint 与项目既有风格）
+globs: "**/*.ts"
+alwaysApply: false
+---
+
+# TypeScript 核心规则
+
+## 环境约束
+
+- **tsconfig**：`strict: true`、`experimentalDecorators: true`；路径别名 `@/*` → `src/*`。
+- **ESLint**：继承 `@typescript-eslint/recommended` + Prettier；JSX 使用 `h` / `Fragment`。`@ts-ignore` 仅必要时使用且为 warn。
+
+## 类型与接口
+
+- 接口以 `I` 前缀命名（如 `IFormItem`、`IFieldMetadata`）。
+- 类型守卫统一用 `(o: any): o is SomeType` 形式并导出。
+- 可从已有接口用 `Omit<>` 派生参数类型，避免重复定义。
+
+```typescript
+// ✅ 类型守卫
+export function isFormItem(o: any): o is IFormItem {
+  return !isFormItemGroup(o) && isBaseFormItem(o);
+}
+
+// ✅ 从接口派生
+type FieldEditParameterType = Omit<IFormItem, 'key'>;
+```
+
+## 类与装饰器
+
+- 类实现对应 `I*` 接口，需改写的属性用 `readonly` 声明，在构造函数中赋值。
+- 装饰器仅用于元数据（如 `@fieldEdit`、`@fieldGroup`），不写业务逻辑；私有/内部 key 可用 `Symbol`。
+
+## 其他
+
+- 优先从 `type` 层导入类型，再 `decorator` / `form` / `wrapper`，保持与项目架构一致。
+- 避免 `any` 泛滥：仅在装饰器 target、类型守卫入参等必要处使用，其余尽量写清类型。
