@@ -46,7 +46,7 @@ export interface IFormItem extends IBaseFormItem {
 }
 
 export interface IFormItemGroup extends IBaseFormItem {
-  children?: IFormItemGroup[];
+  children?: IFormItemGroup[]; // TODO: 这里似乎需要修改为 IBaseFormItem[]？
   newFormItem?: () => void;
   deleteFormItem?: (key: number | string) => void;
 }

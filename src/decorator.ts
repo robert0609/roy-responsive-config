@@ -6,7 +6,7 @@ type FieldGroupParameterType = Omit<
   IFormItemGroup,
   'key' | 'newFormItem' | 'deleteFormItem'
 > & {
-  createNewFormItem?: () => any;
+  createNewFormItem?: () => any; // TODO: 返回值的类型声明，会有两种情况，参看wrapper中的调用方式
 };
 
 type FieldEditParameterType = Omit<IFormItem, 'key'>;
