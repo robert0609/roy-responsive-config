@@ -8,7 +8,8 @@ export type FormItemType =
   | 'cascader'
   | 'uploader'
   | 'colorPicker'
-  | 'textarea';
+  | 'textarea'
+  | 'custom'; // 自定义表单项类型
 export type FormItemValueType =
   | boolean
   | string

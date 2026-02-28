@@ -173,7 +173,8 @@ export class FormItem implements IFormItem {
         { value: 'mapCheckbox', name: '多选框(字典值)' },
         { value: 'switch', name: '开关' },
         { value: 'uploader', name: '上传组件' },
-        { value: 'colorPicker', name: '调色盘' }
+        { value: 'colorPicker', name: '调色盘' },
+        { value: 'custom', name: '自定义表单项' }
       ]
     }
   })
